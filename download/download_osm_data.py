@@ -31,6 +31,10 @@ study_area.plot()
 polygon = study_area.iloc[0]['geometry']
 #%%
 # Download OSM data as graph
+ox.config(use_cache=True, 
+    useful_tags_node=[],
+    useful_tags_way = [])
+
 graph = ox.graph_from_polygon(polygon, network_type='all', simplify=True, retain_all=False, truncate_by_edge=False, clean_periphery=True, custom_filter=None)
 
 #%%
