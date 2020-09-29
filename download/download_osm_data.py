@@ -1,5 +1,8 @@
 '''
-This scripts downloads OSM data using the osmnx module
+This scripts:
+- downloads OSM data using the osmnx module
+- converts the data to a geodataframe with nodes and edges
+- uploads the data to a postgresql database
 '''
 
 #%%
@@ -10,7 +13,6 @@ import matplotlib.pyplot as plt
 from config_download import crs
 from sqlalchemy import create_engine
 import psycopg2
-import networkx as nx
 #%%
 # Provide polygon defining the study area
 study_area = gp.read_file(r"C:\Users\viero\OneDrive\Documents\AAU\AAU_Geodata\cph.gpkg", layer="Frb_boundary")
@@ -30,10 +32,13 @@ study_area.plot()
 #Extract geometry from study area
 polygon = study_area.iloc[0]['geometry']
 #%%
+#OBS remove later
+'''
 # Getting tages from OSM data
 osm_ways = gp.read_file(r"C:\Users\viero\OneDrive\Documents\AAU\AAU_Geodata\OSM_DATA.gpkg", layer='OSM_ways')
 way_tags1 = list(osm_ways)
 way_tags1.sort()
+'''
 #%%
 osm_nodes = gp.read_file(r"C:\Users\viero\OneDrive\Documents\AAU\AAU_Geodata\OSM_DATA.gpkg", layer='OSM_points')
 node_tags1 = list(osm_nodes)
@@ -172,5 +177,6 @@ graph = ox.get_undirected(graph)
 #%%
 # Convert graph to pandas edgelist
 gdf = ox.graph_to_gdfs(graph)
-gdf2 = nx.to_pandas_edgelist(graph)
+nodes= gdf[0]
+edges = gdf[1]
 # %%
