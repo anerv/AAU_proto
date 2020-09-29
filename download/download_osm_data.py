@@ -13,7 +13,7 @@ import psycopg2
 import networkx as nx
 #%%
 # Provide polygon defining the study area
-study_area = gp.read_file(r"C:\Users\viero\OneDrive\Documents\AAU\cph.gpkg", layer="Frb_boundary")
+study_area = gp.read_file(r"C:\Users\viero\OneDrive\Documents\AAU\AAU_Geodata\cph.gpkg", layer="Frb_boundary")
 
 osm_crs = "EPSG:4326"
 # Check that study area crs is correct
@@ -27,40 +27,62 @@ else:
 # OBS change title!!
 study_area.plot()
 #%%
-
+#Extract geometry from study area
 polygon = study_area.iloc[0]['geometry']
 #%%
-# Download OSM data as graph
-
-#Define useful tags for nodes and ways
-node_tags = ["access",
+# Getting tages from OSM data
+osm_ways = gp.read_file(r"C:\Users\viero\OneDrive\Documents\AAU\AAU_Geodata\OSM_DATA.gpkg", layer='OSM_ways')
+way_tags1 = list(osm_ways)
+way_tags1.sort()
+#%%
+osm_nodes = gp.read_file(r"C:\Users\viero\OneDrive\Documents\AAU\AAU_Geodata\OSM_DATA.gpkg", layer='OSM_points')
+node_tags1 = list(osm_nodes)
+node_tags1.sort()
+#%%
+#Define useful tags for nodes and ways in OSM
+node_tags = [
+    "access",
     "amenity",
+    "barrier",
     "bicycle",
+    "bollard",
     "bridge",
+    "bus",
     "button_operated",
     "crossing",
+    "crossing:island",
     "flashing_lights",
     "foot",
     "highway",
     "junction",
     "leisure",
+    "motor_vehicle",
     "motorcar",
     "name",
+    "noexit",
     "oneway",
     "oneway:bicycle",
     "operator",
+    "osm_id",
+    "parking",
     "public_transport",
     "railway",
     "segregated",
+    "service:bicycle:chain_tool",
+    "service:bicycle:pump",
     "shop",
     "stop",
+    "subway",
     "surface",
+    "traffic_calming",
     "traffic_sign",
     "traffic_signals",
     "tunnel",
     "width"]
 
-way_tags = ["access",
+way_tags = [
+    "access",
+    "barrier"
     "bridge",
     "bicycle",
     "button_operated",
@@ -77,23 +99,33 @@ way_tags = ["access",
     "cycleway:left:width",
     "cycleway:right:width",
     "cycleway:both:width",
+    "cycle_way:surface",
     "flashing_lights",
     "foot",
     "footway",
     "highway",
+    "inclince",
     "junction",
     "landuse",
     "lanes",
     "lanes:forward",
     "lanes:backward",
     "lanes:both_ways",
+    "layer",
     "leisure",
+    "level",
+    "lit",
     "maxspeed",
+    "maxspeed:advisory",
+    "moped",
+    "moter_vehicle",
     "motorcar",
     "name",
+    "name:etymology:wikidata",
     "oneway",
     "oneway:bicycle",
     "operator",
+    "osm_id",
     "parking",
     "parking:lane",
     "parking:lane:right",
@@ -107,7 +139,9 @@ way_tags = ["access",
     "railway",
     "segregated",
     "service",
+    "sidewalk",
     "shop",
+    "source_maxspeed",
     "stop",
     "surface",
     "tracktype",
@@ -124,8 +158,11 @@ way_tags = ["access",
     "width:lanes:backward"]
 
 ox.utils.config(use_cache=True, 
-    useful_tags_node=,
-    useful_tags_way = [])
+    useful_tags_node= node_tags,
+    useful_tags_way = way_tags)
+
+#%%
+# Download OSM data as graph
 
 graph = ox.graph_from_polygon(polygon, network_type='all', simplify=True, retain_all=False, truncate_by_edge=False, clean_periphery=True, custom_filter=None)
 
