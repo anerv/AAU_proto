@@ -3,6 +3,7 @@ This scripts:
 - downloads OSM data using the osmnx module
 - converts the data to a geodataframe with nodes and edges
 - uploads the data to a postgresql database
+- a postgresql database must be created beforehand
 '''
 
 #%%
@@ -10,9 +11,9 @@ This scripts:
 import osmnx as ox
 import geopandas as gp
 import matplotlib.pyplot as plt
-from config_download import crs
+from config_download import crs, db_user, db_password, db_host, database_name
 from sqlalchemy import create_engine
-import psycopg2
+import psycopg2 as pg
 #%%
 # Provide polygon defining the study area
 study_area = gp.read_file(r"C:\Users\viero\OneDrive\Documents\AAU\AAU_Geodata\cph.gpkg", layer="Frb_boundary")
@@ -38,11 +39,12 @@ polygon = study_area.iloc[0]['geometry']
 osm_ways = gp.read_file(r"C:\Users\viero\OneDrive\Documents\AAU\AAU_Geodata\OSM_DATA.gpkg", layer='OSM_ways')
 way_tags1 = list(osm_ways)
 way_tags1.sort()
-'''
-#%%
+
 osm_nodes = gp.read_file(r"C:\Users\viero\OneDrive\Documents\AAU\AAU_Geodata\OSM_DATA.gpkg", layer='OSM_points')
 node_tags1 = list(osm_nodes)
 node_tags1.sort()
+
+'''
 #%%
 #Define useful tags for nodes and ways in OSM
 node_tags = [
@@ -180,3 +182,19 @@ gdf = ox.graph_to_gdfs(graph)
 nodes= gdf[0]
 edges = gdf[1]
 # %%
+try:
+    connection = pg.connect(database = database_name, user = db_user,
+                                  password = db_password,
+                                  host = db_host)
+
+    cursor = connection.cursor()
+
+    # Print PostgreSQL version
+    cursor.execute("SELECT version();")
+    record = cursor.fetchone()
+    print("You are connected to - ", record,"\n")
+
+except (Exception, psycopg2.Error) as error :
+    print ("Error while connecting to PostgreSQL", error)
+
+#%%
