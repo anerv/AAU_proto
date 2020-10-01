@@ -213,3 +213,7 @@ except(Exception) as error:
     print('Error while uploading study area data to database:', error)
 
 # %%
+osm_ways = gp.read_file(r"C:\Users\viero\OneDrive\Documents\AAU\AAU_Geodata\OSM_DATA.gpkg", layer='OSM_ways')
+way_tags1 = list(osm_ways)
+way_tags1.sort()
+# %%

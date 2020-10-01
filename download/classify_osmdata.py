@@ -41,3 +41,5 @@ except(Exception) as error:
 # %%
 
 # %%
+connection.close()
+# %%
