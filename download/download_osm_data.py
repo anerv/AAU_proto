@@ -4,15 +4,18 @@ This scripts:
 - converts the data to a geodataframe with nodes and edges
 - uploads the data to a postgresql database
 - a postgresql database must be created beforehand
+- the database should have the postgis extension enabled
 '''
 
 #%%
 #Importing modules!
 import osmnx as ox
 import geopandas as gp
+import shapely
 import matplotlib.pyplot as plt
-from config_download import crs, db_user, db_password, db_host, database_name
-from sqlalchemy import create_engine
+from config_download import crs, db_user, db_password, db_host, database_name, db_port
+import sqlalchemy
+from geoalchemy2 import Geometry, WKTElement
 import psycopg2 as pg
 #%%
 # Provide polygon defining the study area
@@ -25,10 +28,11 @@ if study_area.crs == osm_crs:
 else:
     study_area = study_area.to_crs(osm_crs)
     print("Study area reprojected")
-
+#%%
 # Plot study area for visual check
-# OBS change title!!
-study_area.plot()
+fig, ax = plt.subplots()
+ax.set_title('Study area')
+study_area.plot(ax=ax, facecolor='#ff3368')
 #%%
 #Extract geometry from study area
 polygon = study_area.iloc[0]['geometry']
@@ -63,6 +67,7 @@ node_tags = [
     "highway",
     "junction",
     "leisure",
+    "mapillary,"
     "motor_vehicle",
     "motorcar",
     "name",
@@ -122,6 +127,7 @@ way_tags = [
     "leisure",
     "level",
     "lit",
+    "mapillary,"
     "maxspeed",
     "maxspeed:advisory",
     "moped",
@@ -177,11 +183,40 @@ graph = ox.graph_from_polygon(polygon, network_type='all', simplify=True, retain
 # Convert returned Multidigraph to undirected graph
 graph = ox.get_undirected(graph)
 #%%
+# Plot graph
+fig, ax = ox.plot_graph(graph, bgcolor='w', node_size= 0, edge_color='#ff3368', show=False, close=False)
+ax.set_title('OSM network in study area')
+plt.show()
+#%%
 # Convert graph to pandas edgelist
 gdf = ox.graph_to_gdfs(graph)
 nodes= gdf[0]
 edges = gdf[1]
 # %%
+# Creating engine to connect to database
+
+engine_info = 'postgresql://' + db_user +':'+ db_password + '@' + db_host + ':' + db_port + '/' + database_name
+
+#engine = create_engine('postgresql://postgres:IGEON20@localhost:5432/network_analysis')
+#%%
+#Connecting to database
+try:
+    engine = sqlalchemy.create_engine(engine_info)
+    engine.connect()
+    print('You are connected to the database!')
+except(Exception, sqlalchemy.exc.OperationalError) as error:
+    print('Error while connecting to the dabase!', error)
+
+#%%
+# Processing dataframes before loading to database
+edges['geom'] = edges['geometry'].apply(lambda x: WKTElement(x.wkt, srid=osm_crs)
+#%%
+# Creating the table for edges/ways and loading it into the database
+edges.to_sql('OSM_edges', engine, if_exists='replace')
+
+#%%
+
+#Connecting to database
 try:
     connection = pg.connect(database = database_name, user = db_user,
                                   password = db_password,
@@ -192,9 +227,11 @@ try:
     # Print PostgreSQL version
     cursor.execute("SELECT version();")
     record = cursor.fetchone()
-    print("You are connected to - ", record,"\n")
+    print("You are connected to the database","\n")
 
 except (Exception, psycopg2.Error) as error :
     print ("Error while connecting to PostgreSQL", error)
 
 #%%
+'''
+need both table for nodes edges and boundary?
