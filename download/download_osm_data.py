@@ -173,7 +173,7 @@ plt.show()
 #%%
 # Convert graph to pandas edgelist
 gdf = ox.graph_to_gdfs(graph)
-point= gdf[0]
+nodes = gdf[0]
 edges = gdf[1]
 # %%
 # Creating engine to connect to database
@@ -198,12 +198,11 @@ except(Exception) as error:
 
 table_name_nodes = 'osmnodes'
 try:
-    edges.to_postgis(table_name_nodes, engine, if_exists='replace')
+    nodes.to_postgis(table_name_nodes, engine, if_exists='replace')
     print('Node data successfully loaded to database!')
 except(Exception) as error:
     print('Error while uploading node data to database:', error)
 
-#%%
 #%%
 # Uploading study area to database
 table_name_sa = 'study_area'
@@ -213,19 +212,4 @@ try:
 except(Exception) as error:
     print('Error while uploading study area data to database:', error)
 
-#%%
-#Connecting to database
-try:
-    connection = pg.connect(database = database_name, user = db_user,
-                                  password = db_password,
-                                  host = db_host)
-
-    cursor = connection.cursor()
-
-    # Print PostgreSQL version
-    cursor.execute("SELECT version();")
-    record = cursor.fetchone()
-    print("You are connected to the database","\n")
-
-except (Exception, pg.Error) as error :
-    print ("Error while connecting to PostgreSQL", error)
+# %%
