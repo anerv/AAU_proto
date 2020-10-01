@@ -194,11 +194,8 @@ nodes= gdf[0]
 edges = gdf[1]
 # %%
 # Creating engine to connect to database
-
 engine_info = 'postgresql://' + db_user +':'+ db_password + '@' + db_host + ':' + db_port + '/' + database_name
 
-#engine = create_engine('postgresql://postgres:IGEON20@localhost:5432/network_analysis')
-#%%
 #Connecting to database
 try:
     engine = sqlalchemy.create_engine(engine_info)
@@ -208,8 +205,31 @@ except(Exception, sqlalchemy.exc.OperationalError) as error:
     print('Error while connecting to the dabase!', error)
 
 #%%
+test = edges[['osmid', 'cycleway', 'geometry']]
+test.to_postgis('test',engine)
+
+#%%
+table_name_ways = 'ways'
+
+edges.to_postgis(table_name_ways, engine, if_exists='replace')
+
+
+#%%
 # Processing dataframes before loading to database
-edges['geom'] = edges['geometry'].apply(lambda x: WKTElement(x.wkt, srid=osm_crs)
+edges['geom'] = edges['geometry'].apply(lambda x: WKTElement(x.wkt, srid=osm_crs))
+#edges.set_geometry('geom')
+#%%
+#drop the geometry column as it is now duplicative
+edges.drop('geometry', 1, inplace=True)
+
+#Set geom as geometry column
+
+#%%
+# For the geom column, we will use GeoAlchemy's type 'Geometry'
+
+edges.to_sql('OSM_ways', engine, if_exists='replace', dtype={'geom':Geometry(geometry_type ="LINESTRING", srid=4326)})
+#edges.to_sql('OSM_ways', engine, if_exists='replace')
+
 #%%
 # Creating the table for edges/ways and loading it into the database
 edges.to_sql('OSM_edges', engine, if_exists='replace')
