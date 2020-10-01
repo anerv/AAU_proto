@@ -190,7 +190,7 @@ plt.show()
 #%%
 # Convert graph to pandas edgelist
 gdf = ox.graph_to_gdfs(graph)
-nodes= gdf[0]
+point= gdf[0]
 edges = gdf[1]
 # %%
 # Creating engine to connect to database
@@ -205,34 +205,20 @@ except(Exception, sqlalchemy.exc.OperationalError) as error:
     print('Error while connecting to the dabase!', error)
 
 #%%
-test = edges[['osmid', 'cycleway', 'geometry']]
-test.to_postgis('test',engine)
+# Uploading data to database
+table_name_ways = 'osmways'
+try:
+    edges.to_postgis(table_name_ways, engine, if_exists='replace')
+    print('Way data successfully loaded to database!')
+except(Exception) as error:
+    print('Error while uploading ways data to database:', error)
 
-#%%
-table_name_ways = 'ways'
-
-edges.to_postgis(table_name_ways, engine, if_exists='replace')
-
-
-#%%
-# Processing dataframes before loading to database
-edges['geom'] = edges['geometry'].apply(lambda x: WKTElement(x.wkt, srid=osm_crs))
-#edges.set_geometry('geom')
-#%%
-#drop the geometry column as it is now duplicative
-edges.drop('geometry', 1, inplace=True)
-
-#Set geom as geometry column
-
-#%%
-# For the geom column, we will use GeoAlchemy's type 'Geometry'
-
-edges.to_sql('OSM_ways', engine, if_exists='replace', dtype={'geom':Geometry(geometry_type ="LINESTRING", srid=4326)})
-#edges.to_sql('OSM_ways', engine, if_exists='replace')
-
-#%%
-# Creating the table for edges/ways and loading it into the database
-edges.to_sql('OSM_edges', engine, if_exists='replace')
+table_name_nodes = 'osmnodes'
+try:
+    edges.to_postgis(table_name_nodes, engine, if_exists='replace')
+    print('Node data successfully loaded to database!')
+except(Exception) as error:
+    print('Error while uploading node data to database:', error)
 
 #%%
 
