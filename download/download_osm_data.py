@@ -11,12 +11,9 @@ This scripts:
 #Importing modules!
 import osmnx as ox
 import geopandas as gp
-import shapely
 import matplotlib.pyplot as plt
 from config_download import crs, db_user, db_password, db_host, database_name, db_port
 import sqlalchemy
-from geoalchemy2 import Geometry, WKTElement
-import psycopg2 as pg
 #%%
 # Provide polygon defining the study area
 study_area = gp.read_file(r"C:\Users\viero\OneDrive\Documents\AAU\AAU_Geodata\cph.gpkg", layer="Frb_boundary")
@@ -36,19 +33,6 @@ study_area.plot(ax=ax, facecolor='#ff3368')
 #%%
 #Extract geometry from study area
 polygon = study_area.iloc[0]['geometry']
-#%%
-#OBS remove later
-'''
-# Getting tages from OSM data
-osm_ways = gp.read_file(r"C:\Users\viero\OneDrive\Documents\AAU\AAU_Geodata\OSM_DATA.gpkg", layer='OSM_ways')
-way_tags1 = list(osm_ways)
-way_tags1.sort()
-
-osm_nodes = gp.read_file(r"C:\Users\viero\OneDrive\Documents\AAU\AAU_Geodata\OSM_DATA.gpkg", layer='OSM_points')
-node_tags1 = list(osm_nodes)
-node_tags1.sort()
-
-'''
 #%%
 #Define useful tags for nodes and ways in OSM
 node_tags = [
@@ -176,7 +160,6 @@ ox.utils.config(use_cache=True,
 
 #%%
 # Download OSM data as graph
-
 graph = ox.graph_from_polygon(polygon, network_type='all', simplify=True, retain_all=False, truncate_by_edge=False, clean_periphery=True, custom_filter=None)
 
 #%%
@@ -221,7 +204,16 @@ except(Exception) as error:
     print('Error while uploading node data to database:', error)
 
 #%%
+#%%
+# Uploading study area to database
+table_name_sa = 'study_area'
+try:
+    study_area.to_postgis(table_name_sa, engine, if_exists='replace')
+    print('Study area successfully loaded to database!')
+except(Exception) as error:
+    print('Error while uploading study area data to database:', error)
 
+#%%
 #Connecting to database
 try:
     connection = pg.connect(database = database_name, user = db_user,
@@ -235,9 +227,5 @@ try:
     record = cursor.fetchone()
     print("You are connected to the database","\n")
 
-except (Exception, psycopg2.Error) as error :
+except (Exception, pg.Error) as error :
     print ("Error while connecting to PostgreSQL", error)
-
-#%%
-'''
-need both table for nodes edges and boundary?
