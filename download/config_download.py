@@ -2,8 +2,10 @@
 Configurations used in the analysis
 '''
 
-# Define desired CRS
-#crs = "EPSG:25832"
+#Name of study area
+area_name = 'kbh'
+
+# Define CRS
 crs = "EPSG:4326"
 
 # Database connection

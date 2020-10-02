@@ -23,7 +23,7 @@ except (Exception, pg.Error) as error :
 #%%
 # Test if you can retrieve data from the database
 cursor = connection.cursor()
-sql = "SELECT osmid, cycleway, highway, geometry FROM osmways"
+sql = "SELECT osmid, cycleway, highway, geometry FROM osmwaysfrb"
 try:
     cursor.execute(sql)
     rows = cursor.fetchall()

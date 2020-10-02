@@ -12,19 +12,19 @@ This scripts:
 import osmnx as ox
 import geopandas as gp
 import matplotlib.pyplot as plt
-from config_download import crs, db_user, db_password, db_host, database_name, db_port
+from config_download import crs, area_name, db_user, db_password, db_host, database_name, db_port
 import sqlalchemy
 #%%
 # Provide polygon defining the study area
-study_area = gp.read_file(r"C:\Users\viero\OneDrive\Documents\AAU\AAU_Geodata\cph.gpkg", layer="Frb_boundary")
+study_area = gp.read_file(r"C:\Users\viero\OneDrive\Documents\AAU\AAU_Geodata\cph.gpkg", layer="Copenhagen_boundary")
 
 osm_crs = "EPSG:4326"
 # Check that study area crs is correct
 if study_area.crs == osm_crs:
-    print("The CRS for study area is okay")
+    print("The CRS for %s is okay" % area_name)
 else:
     study_area = study_area.to_crs(osm_crs)
-    print("Study area reprojected")
+    print("Polygon for %s reprojected" % area_name)
 #%%
 # Plot study area for visual check
 fig, ax = plt.subplots()
@@ -78,7 +78,7 @@ node_tags = [
 
 way_tags = [
     "access",
-    "barrier"
+    "barrier",
     "bridge",
     "bicycle",
     "button_operated",
@@ -183,20 +183,20 @@ engine_info = 'postgresql://' + db_user +':'+ db_password + '@' + db_host + ':' 
 try:
     engine = sqlalchemy.create_engine(engine_info)
     engine.connect()
-    print('You are connected to the database!')
+    print('You are connected to the database %s!' % database_name)
 except(Exception, sqlalchemy.exc.OperationalError) as error:
     print('Error while connecting to the dabase!', error)
 
 #%%
 # Uploading data to database
-table_name_ways = 'osmways'
+table_name_ways = 'osmways' + area_name
 try:
     edges.to_postgis(table_name_ways, engine, if_exists='replace')
     print('Way data successfully loaded to database!')
 except(Exception) as error:
     print('Error while uploading ways data to database:', error)
 
-table_name_nodes = 'osmnodes'
+table_name_nodes = 'osmnodes' + area_name
 try:
     nodes.to_postgis(table_name_nodes, engine, if_exists='replace')
     print('Node data successfully loaded to database!')
@@ -205,7 +205,7 @@ except(Exception) as error:
 
 #%%
 # Uploading study area to database
-table_name_sa = 'study_area'
+table_name_sa = 'study_area' + area_name
 try:
     study_area.to_postgis(table_name_sa, engine, if_exists='replace')
     print('Study area successfully loaded to database!')
