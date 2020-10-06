@@ -3,13 +3,15 @@ This script contains the SQL statements classifying the OSM data
 */
 
 -- OBS! Find a way to add table name to script
+-- Rewrite to python functions taking table name as input?
 
 -- Creating new columns
 ALTER TABLE osmwayskbh 
 ADD COLUMN car_traffic VARCHAR DEFAULT NULL, --OK
+ADD COLUMN road_type VARCHAR DEFAULT NULL,
 ADD COLUMN cycling_infrastructure VARCHAR DEFAULT NULL,
 ADD COLUMN cycling_friendly VARCHAR DEFAULT NULL,
-ADD COLUMN cycling_allowed VARCHAR DEFAULT NULL, -- OK
+ADD COLUMN cycling_possible VARCHAR DEFAULT NULL, -- ADD MORE
 ADD COLUMN cycling_against VARCHAR DEFAULT NULL, -- OK
 ADD COLUMN elevation NUMERIC DEFAULT NULL,
 ADD COLUMN pedestrian VARCHAR DEFAULT NULL, --OK
@@ -29,6 +31,19 @@ OR "highway" ILIKE '%tertiary%'
 OR "highway" ILIKE '%trunk%'  
 OR "highway" =  'unclassified' AND "name" IS NOT NULL AND "access" NOT IN  
 ('no', 'restricted');
+
+/*Determining overall road type. The assignment of road type is based on a hierarchy 
+where the road type which usually has the highest speed and most traffic determines the type
+*/
+UPDATE osmwayskbh SET road_type =
+    (CASE WHEN "highway" ILIKE 'motorway' THEN 'motorvej'
+        WHEN "highway" ILIKE ''
+        WHEN "highway" ILIKE ''
+        WHEN "highway" = 'elevator' THEN 'not_road'
+        ELSE 'unknown');
+
+-- begin lowest in hieararchy?
+
 
 -- Finding all segments with cycling infrastructure
 UPDATE osmwayskbh SET cycling_infrastructure = 'cykelinfrastruktur'
@@ -95,9 +110,11 @@ WHERE "Cycleway" ILIKE '%opposite%'
 OR "oneway:bicycle" = 'no' 
 AND "oneway" IN ('yes', 'true');
 
--- Segments where cycling is specified as allowed (mostly interesting for non-cycling infrastructure)
-UPDATE TABLE osmwayskbh SET cycling_allowed = 'yes' 
-WHERE "bicycle" IN ('permissive', 'ok', 'allowed');
+-- Segments where cycling is specified as allowed or assumed allowed based on other attributes (mostly interesting for non-cycling infrastructure)
+UPDATE TABLE osmwayskbh SET cycling_possible = 'yes' 
+WHERE "bicycle" IN ('permissive', 'ok', 'allowed')
+OR "highway" ILIKE '%cycleway%'
+OR -- add more here - which road types allways allow for cycling?;
 
 -- Segments where pedestrians are allowed
 UPDATE TABLE osmwayskbh SET pedestrian = 'yes' 
@@ -131,7 +148,8 @@ OR "parking:lane" ILIKE '%perpendicular%';
 
 -- Cycling friendly segments
 /*
-Should both be based on elevation, speed, number of lanes, presence of cycling infrastructure
+Should both be based on elevation, surface, speed, number of lanes, presence of cycling infrastructure
+cycle friendly paths etc
 */
 
 -- Finally, dealing with unclassified segments
