@@ -55,15 +55,6 @@ WHERE uk.name = kr.name;
 DROP VIEW unknown_roadtype;
 DROP VIEW known_roadtype;
 
-/*
-WITH unknown_roadtype AS 
-    (SELECT name, road_type, geometry FROM osmwayskbh WHERE road_type = 'unknown'), 
-    known_roadtype AS 
-    (SELECT name, highway, road_type, geometry FROM osmwayskbh WHERE road_type != 'unknown')
-SELECT * FROM unknown_roadtype uk 
-INNER JOIN known_roadtype kr ON ST_Touches(uk.geometry, kr.geometry) AND uk.name = kr.name;
-*/
-
 -- Updating value in column car_traffic
 UPDATE osmwayskbh SET car_traffic = 'ja' 
 WHERE highway ILIKE '%corridor%'   
@@ -74,10 +65,12 @@ OR highway ILIKE '%residential%'
 OR highway ILIKE '%secondary%'     
 OR highway ILIKE '%service%'   
 OR highway ILIKE '%tertiary%'    
-OR highway ILIKE '%trunk%'  
+OR highway ILIKE '%trunk%'
+OR road_type IN 
+('motorvej', 'motortrafikvej', 'primærrute', 'sekundærrute/ringvej', 
+'større vej','beboelsesvej', 'adgangsvej/parkering/privatvej_osv')
 OR highway =  'unclassified' AND "name" IS NOT NULL AND "access" NOT IN  
-('no', 'restricted')
-OR road_type IN ();
+('no', 'restricted');
 
 
 -- Finding all segments with cycling infrastructure
@@ -104,7 +97,7 @@ OR "cycleway:both" ILIKE '%track%';
 
 -- Finding segments with cycling infrastructure along a street
 UPDATE osmwayskbh SET cycling_infrastructure = 'cykelinfrastruktur langs vej'
-WHERE car_traffic = 'yes' AND 'cycling_infrastructure' IS NOT NULL;
+WHERE car_traffic = 'ja' AND cycling_infrastructure = 'ja';
 
 CREATE VIEW cycleways AS (SELECT name, highway, road_type, cycling_infrastructure FROM osmwayskbh 
 WHERE highway = 'cycleway');
@@ -117,20 +110,22 @@ FROM car_roads cr WHERE c.name = cr.name;
 DROP VIEW cycleways;
 DROP VIEW car_roads;
 
--- Segments with cycling infrastructure away from car streets (cykling i eget trace)
-/*
-The query below selects highway = cycleway which do not run along a street with car traffic
-Do a join between cycling infra and roads with car traffic, find those that do not match?
-*/
-
-
 -- Segments where cyclists are sharing a lane with other modes of traffic
-UPDATE TABLE osmwayskbh SET cycling_infrastructure = 'shared_lane' 
+UPDATE osmwayskbh SET cycling_infrastructure = 'shared_lane' 
 WHERE "cycleway" ILIKE '%shared_lane%'
 OR "bicycle" ILIKE '%shared_lane%'
 OR "cycleway:left" ILIKE '%shared_lane%' 
 OR "cycleway:right" ILIKE '%shared_lane%'
 OR "cycleway:both" ILIKE '%shared_lane%';
+
+-- Segments with cycling infrastructure away from car streets (cykling i eget trace)
+/*
+The query below selects highway = cycleway which do not run along a street with car traffic
+Do a join between cycling infra and roads with car traffic, find those that do not match?
+*/
+UPDATE TABLe osmwayskbh SET cycling_infrastructure = 'cykelinfrastruktur væk fra vej'
+WHERE
+-- Change - Do a buffer from streets? If more than a given segment within, classify as... 
 
 
 -- OBS - ADD MORE -- classify cycling infrastructure based on cycleway? Track, lane etc.
