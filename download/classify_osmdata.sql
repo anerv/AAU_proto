@@ -1,5 +1,7 @@
 /*
 This script contains the SQL statements classifying the OSM data
+The order of the queries should not be changed, 
+since many updates and classifications are based on previous steps
 */
 
 -- OBS! Find a way to add table name to script
@@ -16,12 +18,13 @@ ADD COLUMN cycling_friendly VARCHAR DEFAULT NULL,
 ADD COLUMN cycling_allowed VARCHAR DEFAULT NULL, -- OK
 ADD COLUMN cycling_against VARCHAR DEFAULT NULL, -- OK
 ADD COLUMN elevation NUMERIC DEFAULT NULL,
-ADD COLUMN pedestrian VARCHAR DEFAULT NULL, --OK
+ADD COLUMN pedestrian_allowed VARCHAR DEFAULT NULL, --OK
 ADD COLUMN on_street_park VARCHAR DEFAULT NULL; --OK
 ADD COLUMN surface_assumed VARCHAR DEFAULT NULL; --OK
 
 
-/*Determining overall road type. The assignment of road type is based on a hierarchy 
+/*
+Determining overall road type. The assignment of road type is based on a hierarchy 
 where the road type which usually has the highest speed and most traffic determines the type
 */
 UPDATE osmwayskbh SET road_type =
@@ -59,7 +62,7 @@ DROP VIEW unknown_roadtype;
 DROP VIEW known_roadtype;
 
 -- Updating value in column car_traffic
-UPDATE osmwayskbh SET car_traffic = 'ja' 
+UPDATE osmwayskbh SET car_traffic = 'yes' 
 WHERE highway ILIKE '%corridor%'   
 OR highway ILIKE '%living_street%'   
 OR highway ILIKE '%motorway%'    
@@ -77,10 +80,10 @@ OR highway =  'unclassified' AND "name" IS NOT NULL AND "access" NOT IN
 
 
 -- Finding all segments with cycling infrastructure
-UPDATE osmwayskbh SET cycling_infrastructure = 'ja'
+UPDATE osmwayskbh SET cycling_infrastructure = 'yes'
 WHERE "bicycle"  = 'designated'
 OR highway = 'cycleway'
-OR cycleway  ILIKE '%separate%'
+--OR cycleway ILIKE '%separate%'
 OR cycleway ILIKE '%designated%' 
 OR cycleway ILIKE '%crossing%'
 OR cycleway ILIKE '%lane%' 
@@ -97,8 +100,40 @@ OR "cycleway:both" ILIKE '%lane%'
 OR "cycleway:both" ILIKE '%opposite%'
 OR "cycleway:both" ILIKE '%track%';
 
+-- Segments where cycling is specified as allowed or assumed allowed based on other attributes (mostly interesting for non-cycling infrastructure)
+UPDATE TABLE osmwayskbh SET cycling_allowed = 'yes' 
+WHERE bicycle IN ('permissive', 'ok', 'allowed', 'designated')
+OR highway ILIKE '%cycleway%'
+OR "cycling_infrastructure" IS NOT NULL;
+
+UPDATE TABLE osmwayskbh SET cycling_allowed = 'no'
+WHERE bicycle IN ('no', 'dismount', 'use_sidepath')
+OR (road_type = 'motorvej' AND cycling_infrastructure IS NULL);
+
+
+-- Segments where pedestrians are allowed
+UPDATE TABLE osmwayskbh SET pedestrian_allowed = 'yes' 
+WHERE highway ILIKE '%pedestrian%' 
+OR highway ILIKE '%path%'
+OR highway ILIKEfootway '%steps%'
+OR "foot" ILIKE '%yes%'
+OR "foot" ILIKE '%designated%' 
+OR "foot" ILIKE'%permissive%' 
+OR "foot" ILIKE '%official%'
+OR "sidewalk" ILIKE '%both%' 
+OR "sidewalk" ILIKE '%left%'
+OR "sidewalk" ILIKE '%right%'
+--OR "sidewalk" ILIKE '%separate%';
+
+/*
+Categorising types of cycling infrastructure
+*/
+-- OBS - ADD MORE -- classify cycling infrastructure based on cycleway? Track, lane etc.
+-- both type and if both sides?
+
+
 -- Segments where cyclists are sharing a lane with other modes of traffic
-UPDATE osmwayskbh SET cycling_infrastructure = 'shared_lane' 
+UPDATE osmwayskbh SET cycling_infrastructure = 'delt kørebane' 
 WHERE cycleway ILIKE '%shared_lane%'
 OR bicycle ILIKE '%shared_lane%'
 OR "cycleway:left" ILIKE '%shared_lane%' 
@@ -106,31 +141,36 @@ OR "cycleway:right" ILIKE '%shared_lane%'
 OR "cycleway:both" ILIKE '%shared_lane%';
 
 
--- OBS - ADD MORE -- classify cycling infrastructure based on cycleway? Track, lane etc.
 
--- OBS - ADD path type - kun gang, blandet, opdelt gang cykel
+-- Categorising path types
 UPDATE osmwayskbh SET path_type =
     (CASE
-        WHEN THEN
+        WHEN cycling_allowed = 'no' THEN 'kun gående'
+        /*WHEN (highway ILIKE '%cycleway%' AND highway ILIKE '%footway%' AND segregated IS NOT 'yes')  
+        OR (highway =  'footway' AND bicycle IN ('permissive', 'ok' , 'yes' , 'allowed' , 'designated' AND segregated IS NOT 'yes')) THEN 'blandet cykel og gang'
+        WHEN (highway ILIKE '%cycleway%' AND highway ILIKE '%footway%' AND segregated = 'yes')  
+        OR (highway =  'footway' AND bicycle IN ('permissive', 'ok' , 'yes' , 'allowed' , 'designated' AND segregated = 'yes')) THEN 'opdelt cykel og gang'
+        */
+        WHEN cycling_allowed = 'yes' AND pedestrian_allowed = 'yes' AND segregated IS NOT 'yes' THEN 'blandet cykel og gang'
+        WHEN cycling_allowed = 'yes' AND pedestrian_allowed = 'yes' AND segregated = 'yes' THEN 'opdelt cykel og gang'
         ELSE 'ukendt type'
         -- find paths with no bikes
         -- find paths with shared
         -- find paths where shared and segregated
     END) 
-WHERE road_type IN ('sti','gangsti','cykel- og gangsti');
+WHERE road_type IN ('sti','gangsti','cykel- og gangsti', 'cykelsti', 'gågade_gangområde');
 
 
-"highway" =  'footway' AND  "bicycle" IN ( 'permissive', 'ok' , 'yes' , 'allowed' , 'designated' )
 
 /* Determining whether the segment of cycling infrastructure runs along a street or not
 
 
 -- Add something here - use a buffer to find segments which are along a street? 
 -- If more than xxx % of segment within a xx meter buffer of car street, then along a street
-
+-- For all in ('sti','gangsti','cykel- og gangsti', 'cykelsti', 'gågade_gangområde', 'trappe')
 
 UPDATE osmwayskbh SET cycling_infrastructure = 'cykelinfrastruktur langs vej'
-WHERE car_traffic = 'ja' AND cycling_infrastructure = 'ja';
+WHERE car_traffic = 'yes' AND cycling_infrastructure = 'yes';
 
 CREATE VIEW cycleways AS (SELECT name, highway, road_type, cycling_infrastructure FROM osmwayskbh 
 WHERE highway = 'cycleway');
@@ -148,34 +188,9 @@ DROP VIEW car_roads;
 
 -- Segments where cycling against the flow of traffic is allowed
 UPDATE TABLE osmwayskbh SET cycling_against = 'yes'
-WHERE Cycleway ILIKE '%opposite%'
+WHERE cycleway ILIKE '%opposite%'
 OR oneway:bicycle = 'no' 
 AND oneway IN ('yes', 'true');
-
--- Segments where cycling is specified as allowed or assumed allowed based on other attributes (mostly interesting for non-cycling infrastructure)
-UPDATE TABLE osmwayskbh SET cycling_allowed = 'yes' 
-WHERE bicycle IN ('permissive', 'ok', 'allowed', 'designated')
-OR highway ILIKE '%cycleway%'
-OR "cycling_infrastructure" IS NOT NULL;
-
-UPDATE TABLE osmwayskbh SET cycling_allowed = 'no'
-WHERE bicycle IN ('no', 'dismount', 'use_sidepath')
-OR (road_type = 'motorvej' AND cycling_infrastructure IS NULL);
-
-
--- Segments where pedestrians are allowed
-UPDATE TABLE osmwayskbh SET pedestrian = 'yes' 
-WHERE highway ILIKE '%pedestrian%' 
-OR highway ILIKE '%path%'
-OR highway ILIKEfootway '%steps%'
-OR "foot" ILIKE '%yes%'
-OR "foot" ILIKE '%designated%' 
-OR "foot" ILIKE'%permissive%' 
-OR "foot" ILIKE '%official%'
-OR "sidewalk" ILIKE '%both%' 
-OR "sidewalk" ILIKE '%left%'
-OR "sidewalk" ILIKE '%right%'
-OR "sidewalk" ILIKE '%separate%';
 
 
 -- Segments with on street parking
@@ -198,7 +213,7 @@ OR "parking:lane" ILIKE '%perpendicular%';
 UPDATE TABLE osmwayskbh SET surface_assumed = surface;
 UPDATE TABLE osmwayskbh SET surface_assumed =
     (CASE 
-        WHEN car_traffic = 'ja' THEN 'paved'
+        WHEN car_traffic = 'yes' THEN 'paved'
         WHEN highway = 'track' THEN 'unpaved'
         ELSE 'ukendt'
     END)
