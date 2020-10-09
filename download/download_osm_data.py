@@ -164,7 +164,7 @@ graph = ox.graph_from_polygon(polygon, network_type='all', simplify=False, retai
 
 #%%
 # Convert returned Multidigraph to undirected graph
-#graph = ox.get_undirected(graph)
+graph = ox.get_undirected(graph)
 #%%
 # Plot graph
 fig, ax = ox.plot_graph(graph, bgcolor='w', node_size= 0, edge_color='#ff3368', show=False, close=False)
