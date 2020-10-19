@@ -83,7 +83,6 @@ except(Exception) as error:
     print(error)
 
 #%%
-
 #Commiting changes and closing db connection
 connection.commit()
 connection.close()
