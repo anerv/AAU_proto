@@ -12,12 +12,12 @@ This scripts:
 import osmnx as ox
 import geopandas as gp
 import matplotlib.pyplot as plt
-from config_download import crs, area_name, db_user, db_password, db_host, database_name, db_port
+from config_download import area_name, db_user, db_password, db_host, database_name, db_port
 import sqlalchemy
 from shapely import geometry
 #%%
 # Provide polygon defining the study area
-study_area = gp.read_file(r"C:\Users\viero\OneDrive\Documents\AAU\AAU_Geodata\cph.gpkg", layer="Copenhagen_boundary")
+study_area = gp.read_file(r"C:\Users\viero\OneDrive\Documents\AAU\AAU_Geodata\cph.gpkg", layer="Frb_boundary")
 
 osm_crs = "EPSG:4326"
 # Check that study area crs is correct
@@ -34,9 +34,6 @@ study_area.plot(ax=ax, facecolor='#ff3368')
 #%%
 #Creating bounding box for study area
 bb = list(study_area.total_bounds)
-#%%
-#Creating polygon from bounding box
-poly = geometry.Polygon(bb)
 #%%
 #Unpacking list
 west, south, east, north = bb

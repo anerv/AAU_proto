@@ -3,10 +3,13 @@ Configurations used in the analysis
 '''
 
 #Name of study area
-area_name = 'kbh'
+area_name = 'frb'
+
+#Size of buffer in metres
+buffer = 200
 
 # Define CRS
-crs = "EPSG:4326"
+crs = 25832
 
 # Database connection
 db_user = 'postgres'
