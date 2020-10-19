@@ -14,6 +14,7 @@ import geopandas as gp
 import matplotlib.pyplot as plt
 from config_download import crs, area_name, db_user, db_password, db_host, database_name, db_port
 import sqlalchemy
+from shapely import geometry
 #%%
 # Provide polygon defining the study area
 study_area = gp.read_file(r"C:\Users\viero\OneDrive\Documents\AAU\AAU_Geodata\cph.gpkg", layer="Copenhagen_boundary")
@@ -31,8 +32,17 @@ fig, ax = plt.subplots()
 ax.set_title('Study area')
 study_area.plot(ax=ax, facecolor='#ff3368')
 #%%
+#Creating bounding box for study area
+bb = list(study_area.total_bounds)
+#%%
+#Creating polygon from bounding box
+poly = geometry.Polygon(bb)
+#%%
+#Unpacking list
+west, south, east, north = bb
+#%%
 #Extract geometry from study area
-polygon = study_area.iloc[0]['geometry']
+#polygon = study_area.iloc[0]['geometry']
 #%%
 #Define useful tags for nodes and ways in OSM
 node_tags = [
@@ -160,8 +170,9 @@ ox.utils.config(use_cache=True,
 
 #%%
 # Download OSM data as graph
-graph = ox.graph_from_polygon(polygon, network_type='all', simplify=False, retain_all=False, truncate_by_edge=False, clean_periphery=True, custom_filter=None)
+#graph = ox.graph_from_polygon(polygon, network_type='all', simplify=False, retain_all=True, truncate_by_edge=True, clean_periphery=True, custom_filter=None)
 
+graph = ox.graph_from_bbox(north, south, east, west, network_type='all', simplify=False, retain_all=True, truncate_by_edge=True, clean_periphery=True, custom_filter=None)
 #%%
 # Convert returned Multidigraph to undirected graph
 graph = ox.get_undirected(graph)
@@ -212,7 +223,7 @@ try:
 except(Exception) as error:
     print('Error while uploading study area data to database:', error)
 
-# %%
+#%%
 osm_ways = gp.read_file(r"C:\Users\viero\OneDrive\Documents\AAU\AAU_Geodata\OSM_DATA.gpkg", layer='OSM_ways')
 way_tags1 = list(osm_ways)
 way_tags1.sort()

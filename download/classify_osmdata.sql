@@ -11,8 +11,8 @@ since many updates and classifications are based on previous steps
 ALTER TABLE osmwayskbh
 ADD COLUMN car_traffic VARCHAR DEFAULT NULL, --OK
 ADD COLUMN road_type VARCHAR DEFAULT NULL, -- OK
-ADD COLUMN cycling_infrastructure VARCHAR DEFAULT NULL, 
-ADD COLUMN path_segregation VARCHAR DEFAULT NULL,
+ADD COLUMN cycling_infrastructure VARCHAR DEFAULT NULL, --??
+ADD COLUMN path_segregation VARCHAR DEFAULT NULL, -- OK
 ADD COLUMN along_street BOOLEAN DEFAULT NULL;
 ADD COLUMN cycling_friendly VARCHAR DEFAULT NULL,
 ADD COLUMN cycling_allowed VARCHAR DEFAULT NULL, -- OK
@@ -72,7 +72,6 @@ OR highway =  'unclassified' AND "name" IS NOT NULL AND "access" NOT IN
 UPDATE osmwayskbh SET cycling_infrastructure = 'yes'
 WHERE "bicycle"  = 'designated'
 OR highway = 'cycleway'
---OR cycleway ILIKE '%separate%'
 OR cycleway ILIKE '%designated%' 
 OR cycleway ILIKE '%crossing%'
 OR cycleway ILIKE '%lane%' 
@@ -109,15 +108,8 @@ OR sidewalk IN ('both', 'left', 'right');
 /*
 Categorising types of cycling infrastructure
 */
--- OBS - ADD MORE -- classify cycling infrastructure based on cycleway? Track, lane etc.
--- both type and if both sides?
-
--- Segments where cyclists are sharing a lane with other modes of traffic
-UPDATE osmwayskbh SET cycling_infrastructure = 'delt kørebane' 
-
-OR "cycleway:left" ILIKE '%share%' 
-OR "cycleway:right" ILIKE '%share%'
-OR "cycleway:both" ILIKE '%share%';
+-- Updating type of cycling infrastructure based on the key cycleway
+UPDATE osmwayskbh SET cycling_infrastructure = 'cykelsti' WHERE highway = 'cycleway';
 
 -- Updating type of cycling infrastructure based on the key cycleway
 UPDATE osmwayskbh SET cycling_infrastructure =
@@ -128,28 +120,46 @@ UPDATE osmwayskbh SET cycling_infrastructure =
         WHEN cycleway = 'opposite_track' THEN 'cykelsti mod ensretning'
         WHEN cycleway = 'track' THEN 'cykelsti'
         WHEN cycleway = 'shared_lane' OR bicycle = 'shared_lane' THEN 'delt kørebane'
-        END)
+    END)
 WHERE cycling_allowed = 'yes';
 
-/*Updating type of cycling infrastructure based on the keys cycleway:left and cycleway:right
-It is assumed that right and left are not used on segments where highway = cycleway
-Cycleway:left/right are only used when no type has been assigned based on the key cycleway 
-(thus where the value for cycling infrastructure is still 'yes')
-*/
+    /*Updating type of cycling infrastructure based on the keys cycleway:left and cycleway:right
+    It is assumed that right and left are not used on segments where highway = cycleway
+    Cycleway:left/right are only used when no type has been assigned based on the key cycleway 
+    (thus where the value for cycling infrastructure is still 'yes')
+    */
 UPDATE osmwayskbh SET cycling_infrastructure =
     (CASE
         WHEN "cycleway:left" = 'crossing' OR "cycleway:right" = 'crossing' THEN 'cykelbane i kryds'
-        WHEN "cycleway:left" = 'lane' THEN 'cykelbane'
-        WHEN "cycleway:left" = 'opposite_lane' THEN 'cykelbane mod ensretning'
-        WHEN "cycleway:left" = 'opposite_track' THEN 'cykelsti mod ensretning'
-        WHEN "cycleway:left" = 'track' THEN 'cykelsti'
-        END)
-WHERE cycling_infrastructure = 'ja';
 
-kombi: lane one side, track another
-only lane in one side
-only track in one
+        -- Same type in both right and left side
+        WHEN "cycleway:left" = 'lane' AND "cycleway:right" = 'lane' THEN 'cykelbane'
+        WHEN "cycleway:left" = 'track' AND "cycleway:right" = 'track' THEN 'cykelsti'
 
+        -- Different type in left and right side
+            -- Lane in one side, track on the other side
+        WHEN ("cycleway:left" = 'track' AND "cycleway:right" = 'lane') 
+            OR ("cycleway:left" = 'lane' AND "cycleway:right" = 'track')
+            THEN 'cykelsti_cykelbane'
+
+            -- Only cycling infrastructure in one side
+        WHEN "cycleway:left" = 'track' AND "cycleway:right" NOT IN ('lane','track','shared_lane')
+            THEN 'cykelsti_enkeltsidet'
+        WHEN "cycleway:left" = 'lane' AND "cycleway:right" NOT IN ('lane','track','shared_lane')
+            THEN 'cykelbane_enkeltsidet'
+        WHEN "cycleway:right" = 'track' AND "cycleway:left" NOT IN ('lane','track','shared_lane')
+            THEN 'cykelsti_enkeltsidet'
+        WHEN "cycleway:right" = 'lane' AND "cycleway:left" NOT IN ('lane','track','shared_lane')
+            THEN 'cykelbane_enkeltsidet'
+
+            -- Cycling infrastructure in one side and shared lane in the other
+        WHEN ("cycleway:left" = 'track' AND "cycleway:right" = 'shared_lane') 
+            OR ("cycleway:left" = 'shared_lane' AND "cycleway:right" = 'track')
+            THEN 'cykelsti_delt_bane'
+        WHEN ("cycleway:left" = 'lane' AND "cycleway:right" = 'shared_lane') 
+            OR ("cycleway:left" = 'shared_lane' AND "cycleway:right" = 'lane')
+            THEN 'cykelbane_delt_bane'
+WHERE cycling_infrastructure = 'yes';
 
 -- Categorising path types
 UPDATE osmwayskbh SET path_segregation =
@@ -190,8 +200,10 @@ DROP VIEW car_roads;
 -- Segments where cycling against the flow of traffic is allowed
 UPDATE TABLE osmwayskbh SET cycling_against = 'yes'
 WHERE cycleway ILIKE '%opposite%'
-OR oneway:bicycle = 'no' 
-AND oneway IN ('yes', 'true');
+OR (oneway IN ('yes', 'true')
+AND ("oneway:bicycle" = 'no' OR "cycleway:left" ILIKE '%opposite%' 
+    OR "cycleway:right" ILIKE '%opposite%')
+);
 
 
 -- Segments with on street parking
