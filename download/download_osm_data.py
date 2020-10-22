@@ -12,13 +12,18 @@ This scripts:
 import osmnx as ox
 import geopandas as gp
 import matplotlib.pyplot as plt
-from config_download import area_name, db_user, db_password, db_host, database_name, db_port
+from config_download import *
 import sqlalchemy
-from shapely import geometry
 #%%
 # Provide polygon defining the study area
-study_area = gp.read_file(r"C:\Users\viero\OneDrive\Documents\AAU\AAU_Geodata\cph.gpkg", layer="Frb_boundary")
-
+try:
+    #if format is shapefile only path is needed
+    study_area = gp.read_file(fp_sa)
+except(Exception) as error:
+    #if format is geopackage use both filepath and layer name
+    study_area = gp.read_file(fp_sa, layer=layer_name)
+    
+#%%
 osm_crs = "EPSG:4326"
 # Check that study area crs is correct
 if study_area.crs == osm_crs:
@@ -35,7 +40,7 @@ study_area.plot(ax=ax, facecolor='#ff3368')
 #Creating bounding box for study area
 bb = list(study_area.total_bounds)
 #%%
-#Unpacking list
+#Unpacking list of bb values
 west, south, east, north = bb
 #%%
 #Extract geometry from study area
@@ -176,7 +181,7 @@ graph = ox.get_undirected(graph)
 #%%
 # Plot graph
 fig, ax = ox.plot_graph(graph, bgcolor='w', node_size= 0, edge_color='#ff3368', show=False, close=False)
-ax.set_title('OSM network in study area')
+ax.set_title('OSM network in %s' % area_name)
 plt.show()
 #%%
 # Convert graph to pandas edgelist
@@ -221,8 +226,7 @@ except(Exception) as error:
     print('Error while uploading study area data to database:', error)
 
 #%%
+
 osm_ways = gp.read_file(r"C:\Users\viero\OneDrive\Documents\AAU\AAU_Geodata\OSM_DATA.gpkg", layer='OSM_ways')
 way_tags1 = list(osm_ways)
 way_tags1.sort()
-# %%
-# %%

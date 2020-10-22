@@ -3,7 +3,11 @@ Configurations used in the analysis
 '''
 
 #Name of study area
-area_name = 'frb'
+area_name = 'kbh'
+
+#Filepath to polygon defining the study area
+fp_sa = r"C:\Users\viero\OneDrive\Documents\AAU\AAU_Geodata\cph.gpkg"
+layer_name ="Copenhagen_boundary"
 
 #Size of buffer in metres
 buffer = 200

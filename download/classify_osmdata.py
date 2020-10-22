@@ -5,7 +5,6 @@ This script reclassifies the original OSM data
 #Importing modules
 from config_download import *
 import psycopg2 as pg
-import pandas as pd
 import geopandas as gpd
 
 #%%
@@ -83,6 +82,13 @@ except(Exception) as error:
     print(error)
 
 #%%
+
+
+
+
+
+
+
 #Commiting changes and closing db connection
 connection.commit()
 connection.close()

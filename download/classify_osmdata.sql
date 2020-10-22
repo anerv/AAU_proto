@@ -13,13 +13,13 @@ ADD COLUMN car_traffic VARCHAR DEFAULT NULL, --OK
 ADD COLUMN road_type VARCHAR DEFAULT NULL, -- OK
 ADD COLUMN cycling_infrastructure VARCHAR DEFAULT NULL, --??
 ADD COLUMN path_segregation VARCHAR DEFAULT NULL, -- OK
-ADD COLUMN along_street BOOLEAN DEFAULT NULL;
+ADD COLUMN along_street BOOLEAN DEFAULT NULL,
 ADD COLUMN cycling_friendly VARCHAR DEFAULT NULL,
 ADD COLUMN cycling_allowed VARCHAR DEFAULT NULL, -- OK
 ADD COLUMN cycling_against VARCHAR DEFAULT NULL, -- OK
 ADD COLUMN elevation NUMERIC DEFAULT NULL,
 ADD COLUMN pedestrian_allowed VARCHAR DEFAULT NULL, --OK
-ADD COLUMN on_street_park VARCHAR DEFAULT NULL; --OK
+ADD COLUMN on_street_park VARCHAR DEFAULT NULL, --OK
 ADD COLUMN surface_assumed VARCHAR DEFAULT NULL; --OK
 
 /*
@@ -47,8 +47,11 @@ UPDATE osmwayskbh SET road_type =
     END);
 
  -- Limiting number of road segments with road type 'unknown'
-CREATE VIEW unknown_roadtype AS (SELECT name, osmid, highway, road_type, geometry FROM osmwayskbh WHERE road_type = 'ukendt');
-CREATE VIEW known_roadtype AS (SELECT name, osmid, highway, road_type, geometry FROM osmwayskbh WHERE road_type != 'ukendt' AND highway != 'cycleway');
+CREATE VIEW unknown_roadtype AS 
+(SELECT name, osmid, highway, road_type, geometry FROM osmwayskbh WHERE road_type = 'ukendt');
+CREATE VIEW known_roadtype 
+AS (SELECT name, osmid, highway, road_type, geometry FROM osmwayskbh 
+WHERE road_type != 'ukendt' AND highway != 'cycleway');
 
 UPDATE unknown_roadtype uk SET road_type = kr.road_type FROM known_roadtype kr 
 WHERE ST_Touches(uk.geometry, kr.geometry) AND uk.name = kr.name;
@@ -89,15 +92,15 @@ OR "cycleway:both" ILIKE '%opposite%'
 OR "cycleway:both" ILIKE '%track%';
 
 -- Segments where cycling is specified as allowed or assumed allowed based on other attributes (mostly interesting for non-cycling infrastructure)
-UPDATE TABLE osmwayskbh SET cycling_allowed = 'yes' 
+UPDATE osmwayskbh SET cycling_allowed = 'yes' 
 WHERE bicycle IN ('permissive', 'ok', 'allowed', 'designated')
 OR highway = 'cycleway'
 OR "cycling_infrastructure" IS NOT NULL;
 
-UPDATE TABLE osmwayskbh SET cycling_allowed = 'no'
+UPDATE osmwayskbh SET cycling_allowed = 'no'
 WHERE bicycle IN ('no', 'dismount', 'use_sidepath')
 OR (road_type = 'motorvej' AND cycling_infrastructure IS NULL);
-
+ -- FIX HERE - CYCLING dismount on cycle ways???
 
 -- Segments where pedestrians are allowed
 UPDATE TABLE osmwayskbh SET pedestrian_allowed = 'yes' 
@@ -175,7 +178,7 @@ WHERE road_type IN ('sti','gangsti', 'cykelsti', 'gågade_gangområde');
 
 /* Determining whether the segment of cycling infrastructure runs along a street or not
 
-
+-- Potentially combine with step that connects road ids from GeoDK data, or other data source
 -- Add something here - use a buffer to find segments which are along a street? 
 -- If more than xxx % of segment within a xx meter buffer of car street, then along a street
 -- For all in ('sti','gangsti','cykel- og gangsti', 'cykelsti', 'gågade_gangområde', 'trappe')
