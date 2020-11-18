@@ -82,13 +82,33 @@ except(Exception) as error:
     print(error)
 
 #%%
+#Commiting changes
+connection.commit()
+#%%
+#Check what clipped data looks like
+ways = gpd.read_postgis(sql_ways, connection, geom_col='geometry')
+ways.plot()
+#%%
+sql_file = open('classify_osmdata.sql','r')
+cursor = connection.cursor()
 
+try:
+    cursor.execute(sql_file.read())
+except(Exception) as error:
+    print(error)
+    print('Reconnecting to the database. Please fix error before rerunning')
+    connection.close()
+    try:
+        connection = pg.connect(database = database_name, user = db_user,
+                                    password = db_password,
+                                    host = db_host)
 
+        print('You are connected to the database %s!' % database_name)
 
-
-
-
-
+    except (Exception, pg.Error) as error :
+        print ("Error while connecting to PostgreSQL", error)
+    
+#%%
 #Commiting changes and closing db connection
 connection.commit()
 connection.close()
