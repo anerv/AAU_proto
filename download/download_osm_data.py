@@ -14,6 +14,13 @@ import geopandas as gp
 import matplotlib.pyplot as plt
 from config_download import *
 import sqlalchemy
+'''import geojson
+import pandas as pd
+import requests
+import json
+from pandas.io.json import json_normalize
+import overpy
+import overpass'''
 #%%
 # Provide polygon defining the study area
 try:
@@ -24,8 +31,9 @@ except(Exception) as error:
     study_area = gp.read_file(fp_sa, layer=layer_name)
     
 #%%
-osm_crs = "EPSG:4326"
 # Check that study area crs is correct
+osm_crs = "EPSG:4326"
+
 if study_area.crs == osm_crs:
     print("The CRS for %s is okay" % area_name)
 else:
@@ -46,6 +54,7 @@ west, south, east, north = bb
 #Extract geometry from study area
 #polygon = study_area.iloc[0]['geometry']
 #%%
+
 #Define useful tags for nodes and ways in OSM
 node_tags = [
     "access",
@@ -170,6 +179,7 @@ ox.utils.config(use_cache=True,
     useful_tags_node= node_tags,
     useful_tags_way = way_tags)
 
+
 #%%
 # Download OSM data as graph
 #graph = ox.graph_from_polygon(polygon, network_type='all', simplify=False, retain_all=True, truncate_by_edge=True, clean_periphery=True, custom_filter=None)
@@ -178,7 +188,42 @@ graph = ox.graph_from_bbox(north, south, east, west, network_type='all', simplif
 #%%
 # Convert returned Multidigraph to undirected graph
 graph = ox.get_undirected(graph)
+
 #%%
+'''
+#Download data using overpass api
+#api =  overpass.API()
+api = overpy.Overpass()
+
+#%%
+south = 50.746
+west = 7.154
+north = 50.748
+east = 7.157
+#way_tags_string = '","'.join(way_tags)
+#way_tags_string = '"' + way_tags_string + '"'
+
+#ways_query = '[out:csv(%s, true; "|")];way(%f,%f,%f,%f); out geom;' % (way_tags_string, south, west, north, east)
+
+#ways_query = '[out:json];way(%f,%f,%f,%f);relation(%f,%f,%f,%f);(._;>;);out geom;' % (south, west, north, east, south, west, north, east)
+
+ways_query = '[out:json];way(%f,%f,%f,%f);(._;>;);out geom;' % (south, west, north, east)
+#%%
+print(ways_query)
+#%%
+#Fetching data in bb
+test = '[out:json];area[name="New York"];relation[route="subway"](area);out;'
+data = api.query(test)
+type(data)
+#%%
+overpass_url = "http://overpass-api.de/api/interpreter"
+overpass_query = ways_query
+response = requests.get(overpass_url, 
+                        params={'data': overpass_query})
+data = response.json()
+'''
+#%%
+
 # Plot graph
 fig, ax = ox.plot_graph(graph, bgcolor='w', node_size= 0, edge_color='#ff3368', show=False, close=False)
 ax.set_title('OSM network in %s' % area_name)
@@ -230,3 +275,6 @@ except(Exception) as error:
 osm_ways = gp.read_file(r"C:\Users\viero\OneDrive\Documents\AAU\AAU_Geodata\OSM_DATA.gpkg", layer='OSM_ways')
 way_tags1 = list(osm_ways)
 way_tags1.sort()
+#%%
+
+# %%
