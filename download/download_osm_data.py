@@ -14,13 +14,7 @@ import geopandas as gp
 import matplotlib.pyplot as plt
 from config_download import *
 import sqlalchemy
-'''import geojson
-import pandas as pd
-import requests
-import json
-from pandas.io.json import json_normalize
-import overpy
-import overpass'''
+
 #%%
 # Provide polygon defining the study area
 try:
@@ -190,39 +184,6 @@ graph = ox.graph_from_bbox(north, south, east, west, network_type='all', simplif
 graph = ox.get_undirected(graph)
 
 #%%
-'''
-#Download data using overpass api
-#api =  overpass.API()
-api = overpy.Overpass()
-
-#%%
-south = 50.746
-west = 7.154
-north = 50.748
-east = 7.157
-#way_tags_string = '","'.join(way_tags)
-#way_tags_string = '"' + way_tags_string + '"'
-
-#ways_query = '[out:csv(%s, true; "|")];way(%f,%f,%f,%f); out geom;' % (way_tags_string, south, west, north, east)
-
-#ways_query = '[out:json];way(%f,%f,%f,%f);relation(%f,%f,%f,%f);(._;>;);out geom;' % (south, west, north, east, south, west, north, east)
-
-ways_query = '[out:json];way(%f,%f,%f,%f);(._;>;);out geom;' % (south, west, north, east)
-#%%
-print(ways_query)
-#%%
-#Fetching data in bb
-test = '[out:json];area[name="New York"];relation[route="subway"](area);out;'
-data = api.query(test)
-type(data)
-#%%
-overpass_url = "http://overpass-api.de/api/interpreter"
-overpass_query = ways_query
-response = requests.get(overpass_url, 
-                        params={'data': overpass_query})
-data = response.json()
-'''
-#%%
 
 # Plot graph
 fig, ax = ox.plot_graph(graph, bgcolor='w', node_size= 0, edge_color='#ff3368', show=False, close=False)
@@ -277,4 +238,11 @@ way_tags1 = list(osm_ways)
 way_tags1.sort()
 #%%
 
+# %%
+way_tags_string = "','".join(way_tags)
+way_tags_string = "'"+way_tags_string+"'"
+# %%
+print(way_tags_string)
+# %%
+west
 # %%

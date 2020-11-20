@@ -1,2 +1,0 @@
-'''
-This scrip loads 
