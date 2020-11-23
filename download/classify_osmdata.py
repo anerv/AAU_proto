@@ -1,5 +1,5 @@
 '''
-This script reclassifies the original OSM data 
+This script reclassifies the original OSM data for data downloaded using osmnx and a predefined study area
 '''
 #%%
 #Importing modules
