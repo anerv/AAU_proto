@@ -51,9 +51,9 @@ UPDATE wayskbh SET road_type =
 
  -- Limiting number of road segments with road type 'unknown'
 CREATE VIEW unknown_roadtype AS 
-(SELECT name, osmid, highway, road_type, geometry FROM wayskbh WHERE road_type = 'ukendt');
+(SELECT name, osm_id, highway, road_type, geometry FROM wayskbh WHERE road_type = 'ukendt');
 CREATE VIEW known_roadtype 
-AS (SELECT name, osmid, highway, road_type, geometry FROM wayskbh 
+AS (SELECT name, osm_id, highway, road_type, geometry FROM wayskbh 
 WHERE road_type != 'ukendt' AND highway != 'cycleway');
 
 

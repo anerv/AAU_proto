@@ -15,7 +15,7 @@ sa_table = "study_area" + area_name
 print('Table names are:', ways_table, nodes_table, sa_table)
 #%%
 
-#Connecting to database and creating cursor for queries
+#Connecting to database 
 try:
     connection = pg.connect(database = database_name, user = db_user,
                                   password = db_password,

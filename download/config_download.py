@@ -19,5 +19,5 @@ crs = 25832
 db_user = 'postgres'
 db_password = 'IGEON20'
 db_host = 'localhost'
-database_name = 'osmbike'
+database_name = 'cphbike'
 db_port = '5432'

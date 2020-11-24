@@ -1,20 +1,12 @@
 '''
-This script classifies osm data downloaded using osm2pgsql
+This script prepares the original osm data downloaded using osm2pgsql
 '''
 #%%
 #Importing modules
 from config_download import *
-#import psycopg2 as pg
 import geopandas as gpd
 import sqlalchemy
-# %%
-'''
-TO DO
 
-- slet unødvendige kolonner fra ways, relations, points
-- klassificer ways
-- klassificer
-'''
 #%%
 # Provide polygon defining the study area
 try:
@@ -179,15 +171,5 @@ with engine.connect() as connection:
         print(error)
 
 '''
-# %%
-#Classify data using external SQL file
-sql_file = open('classify_osm_waystable.sql','r')
+
 #%%
-with engine.connect() as connection:
-    try:
-        connection.execute(sql_file)
-        print('Way data reclassified')
-    except(Exception) as error:
-        print(error)
-#%%
-# Get rid of unnecessary columns

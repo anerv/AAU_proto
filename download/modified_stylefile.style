@@ -142,6 +142,7 @@ node       service:bicycle:chain_tool  text  linear
 node       service:bicycle:pump  text  linear
 node,way   service      text         linear
 node,way   shop         text         polygon
+way        sidewalk     text         linear
 way        source:maxspeed     text  linear
 node       stop         text         linear
 node,way   surface      text         linear
