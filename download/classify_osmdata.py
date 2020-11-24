@@ -89,7 +89,7 @@ connection.commit()
 ways = gpd.read_postgis(sql_ways, connection, geom_col='geometry')
 ways.plot()
 #%%
-sql_file = open('classify_osmdata.sql','r')
+sql_file = open('classify_osm_waystable.sql','r')
 cursor = connection.cursor()
 
 try:

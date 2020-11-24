@@ -180,3 +180,14 @@ with engine.connect() as connection:
 
 '''
 # %%
+#Classify data using external SQL file
+sql_file = open('classify_osm_waystable.sql','r')
+#%%
+with engine.connect() as connection:
+    try:
+        connection.execute(sql_file)
+        print('Way data reclassified')
+    except(Exception) as error:
+        print(error)
+#%%
+# Get rid of unnecessary columns
