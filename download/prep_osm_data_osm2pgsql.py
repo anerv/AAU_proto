@@ -139,7 +139,7 @@ ways_crs = "SELECT find_SRID('public', '%s', 'geometry');" % ways_table
 points_crs = "SELECT find_SRID('public', '%s', 'geometry');" % points_table
 rel_crs = "SELECT find_SRID('public', '%s', 'geometry');" % rel_table
 sa_crs = "SELECT find_SRID('public', '%s', 'geometry');" % sa_table
-#%%
+
 with engine.connect() as connection:
     check_ways = list(connection.execute(ways_crs))[0][0]
     check_points = list(connection.execute(points_crs))[0][0]

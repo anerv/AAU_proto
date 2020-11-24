@@ -30,6 +30,7 @@ cursor = connection.cursor()
 
 try:
     cursor.execute(sql_file.read())
+    print('Ways data reclassified')
 except(Exception) as error:
     print(error)
     print('Reconnecting to the database. Please fix error before rerunning')
@@ -56,9 +57,12 @@ connection.commit()
 
 #Classyfing points table
 
-#Deleting unneccesary columns
+#Delecting unneccessary rows
+
+#Deleting unneccessary columns
 
 
 #Commiting changes and closing db connection
 connection.commit()
 connection.close()
+# %%

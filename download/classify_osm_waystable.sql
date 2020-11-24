@@ -48,8 +48,7 @@ UPDATE wayskbh SET road_type =
         ELSE 'ukendt'
     END);
 
-
- -- Limiting number of road segments with road type 'unknown'
+-- Limiting number of road segments with road type 'unknown'
 CREATE VIEW unknown_roadtype AS 
 (SELECT name, osm_id, highway, road_type, geometry FROM wayskbh WHERE road_type = 'ukendt');
 CREATE VIEW known_roadtype 
@@ -99,7 +98,7 @@ OR "cycleway:both" ILIKE '%track%';
 UPDATE wayskbh SET cycling_allowed = 'yes' 
 WHERE bicycle IN ('permissive', 'ok', 'allowed', 'designated')
 OR highway = 'cycleway'
-OR "cycling_infrastructure" IS NOT NULL;
+OR "cycling_infrastructure" = 'yes';
 
 UPDATE wayskbh SET cycling_allowed = 'no'
 WHERE bicycle IN ('no', 'dismount', 'use_sidepath')
@@ -136,37 +135,53 @@ It is assumed that right and left are not used on segments where highway = cycle
 Cycleway:left/right are only used when no type has been assigned based on the key cycleway 
 (thus where the value for cycling infrastructure is still 'yes')
 */
+
+-- Finding cycleways through intersections and roads with the same type of cycling infrastructure in both sides
 UPDATE wayskbh SET cycling_infrastructure =
     (CASE
         WHEN "cycleway:left" = 'crossing' OR "cycleway:right" = 'crossing' THEN 'cykelbane i kryds'
-
-        -- Same type in both right and left side
         WHEN "cycleway:left" = 'lane' AND "cycleway:right" = 'lane' THEN 'cykelbane'
         WHEN "cycleway:left" = 'track' AND "cycleway:right" = 'track' THEN 'cykelsti'
+        ELSE cycling_infrastructure
+    END)
+WHERE cycling_allowed = 'yes';
 
-        -- Different type in left and right side
-            -- Lane in one side, track on the other side
-        WHEN ("cycleway:left" = 'track' AND "cycleway:right" = 'lane') 
-            OR ("cycleway:left" = 'lane' AND "cycleway:right" = 'track')
+-- Roads with different types of cycling infrastructure in different sides
+UPDATE wayskbh SET cycling_infrastructure =
+    (CASE
+        WHEN ("cycleway:left" ILIKE '%track' AND ("cycleway:right" = 'lane' OR "cycleway:right" = 'opposite_lane')) 
+            OR ("cycleway:right" ILIKE '%track' AND ("cycleway:left" = 'lane' OR "cycleway:right" = 'opposite_lane'))
             THEN 'cykelsti_cykelbane'
+        ELSE cycling_infrastructure
+    END)
+WHERE cycling_allowed = 'yes';
 
-            -- Only cycling infrastructure in one side
-        WHEN "cycleway:left" = 'track' AND "cycleway:right" NOT IN ('lane','track','shared_lane')
-            THEN 'cykelsti_enkeltsidet'
-        WHEN "cycleway:left" = 'lane' AND "cycleway:right" NOT IN ('lane','track','shared_lane')
+-- Roads with only cycling infrastructure in one side
+-- Add is null!
+UPDATE wayskbh SET cycling_infrastructure =
+    (CASE
+        WHEN "cycleway:left" = 'track' AND ("cycleway:right" NOT IN ('lane','track','shared_lane','separate', 'opposite_lane','opposite_track')
+            OR "cycleway:right" IS NULL) THEN 'cykelsti_enkeltsidet'
+        WHEN "cycleway:left" = 'lane' AND "cycleway:right" NOT IN ('lane','track','shared_lane','separate', 'opposite_lane','opposite_track')
             THEN 'cykelbane_enkeltsidet'
-        WHEN "cycleway:right" = 'track' AND "cycleway:left" NOT IN ('lane','track','shared_lane')
+        WHEN "cycleway:right" = 'track' AND "cycleway:left" NOT IN ('lane','track','shared_lane','separate', 'opposite_lane','opposite_track')
             THEN 'cykelsti_enkeltsidet'
-        WHEN "cycleway:right" = 'lane' AND "cycleway:left" NOT IN ('lane','track','shared_lane')
+        WHEN "cycleway:right" = 'lane' AND "cycleway:left" NOT IN ('lane','track','shared_lane','separate', 'opposite_lane','opposite_track')
             THEN 'cykelbane_enkeltsidet'
+        ELSE cycling_infrastructure
+    END)
+WHERE cycling_allowed = 'yes';
 
-            -- Cycling infrastructure in one side and shared lane in the other
-        WHEN ("cycleway:left" = 'track' AND "cycleway:right" = 'shared_lane') 
-            OR ("cycleway:left" = 'shared_lane' AND "cycleway:right" = 'track')
-            THEN 'cykelsti_delt_bane'
-        WHEN ("cycleway:left" = 'lane' AND "cycleway:right" = 'shared_lane') 
-            OR ("cycleway:left" = 'shared_lane' AND "cycleway:right" = 'lane')
-            THEN 'cykelbane_delt_bane'
+
+-- Cycling infrastructure in one side and shared lane in the other
+UPDATE wayskbh SET cycling_infrastructure =
+    (CASE
+        WHEN ("cycleway:left" ILIKE '%track' AND "cycleway:right" = 'shared_lane') 
+            OR ("cycleway:left" = 'shared_lane' AND "cycleway:right" ILIKE '%track')
+            THEN 'cykelsti_og_delt_bane'
+        WHEN ("cycleway:left" IN ('lane','opposite_lane') AND "cycleway:right" = 'shared_lane') 
+            OR ("cycleway:left" = 'shared_lane' AND "cycleway:right" IN ('lane','opposite_lane'))
+            THEN 'cykelbane_og_delt_bane'
         ELSE cycling_infrastructure
         END)
 WHERE cycling_allowed = 'yes';
