@@ -5,9 +5,6 @@ since many updates and classifications are based on previous steps
 Update table name as needed
 */
 
--- OBS! Find a way to add table name to script
--- Rewrite to python functions taking table name as input?
-
 -- Creating new columns
 ALTER TABLE wayskbh
 ADD COLUMN car_traffic VARCHAR DEFAULT NULL, --OK
@@ -15,6 +12,7 @@ ADD COLUMN road_type VARCHAR DEFAULT NULL, -- OK
 ADD COLUMN cycling_infrastructure VARCHAR DEFAULT NULL, --??
 ADD COLUMN path_segregation VARCHAR DEFAULT NULL, -- OK
 ADD COLUMN along_street BOOLEAN DEFAULT NULL, -- venter
+ADD COLUMN cy_infra_separated BOOLEAN DEFAULT NULL,
 ADD COLUMN cycling_friendly VARCHAR DEFAULT NULL, -- venter
 ADD COLUMN cycling_allowed VARCHAR DEFAULT NULL, -- OK
 ADD COLUMN cycling_against VARCHAR DEFAULT NULL, -- OK
@@ -34,10 +32,10 @@ UPDATE wayskbh SET road_type =
         WHEN highway ILIKE '%trunk%' THEN 'motortrafikvej'
         WHEN highway ILIKE '%primary%' THEN 'primaerrute'
         WHEN highway ILIKE '%secondary%' THEN 'sekundaerrute/ringvej'
-        WHEN highway ILIKE '%tertiary%' THEN 'stoerre vej'
+        WHEN highway ILIKE '%tertiary%' THEN 'stoerre_vej'
         WHEN highway ILIKE '%residential%' THEN 'beboelsesvej'
         WHEN highway ILIKE '%service%' THEN 'adgangsvej/parkering/privatvej_osv'
-        WHEN highway ILIKE '%living_street' THEN 'begraenset biltrafik'
+        WHEN highway ILIKE '%living_street' THEN 'begraenset_biltrafik'
         WHEN highway ILIKE '%pedestrian%' THEN 'gaagade_gangomraade'
         WHEN highway ILIKE '%path%' THEN 'sti'
         WHEN highway ILIKE '%cycleway%' THEN 'cykelsti'
@@ -59,8 +57,8 @@ WHERE road_type != 'ukendt' AND highway != 'cycleway');
 UPDATE unknown_roadtype uk SET road_type = kr.road_type FROM known_roadtype kr 
 WHERE ST_Touches(uk.geometry, kr.geometry) AND uk.name = kr.name;
 
---UPDATE unknown_roadtype uk SET road_type = kr.road_type FROM known_roadtype kr 
---WHERE uk.name = kr.name;
+UPDATE unknown_roadtype uk SET road_type = kr.road_type FROM known_roadtype kr 
+WHERE uk.name = kr.name AND uk.road_type = 'ukendt';
 
 DROP VIEW unknown_roadtype;
 DROP VIEW known_roadtype;
@@ -69,7 +67,7 @@ DROP VIEW known_roadtype;
 UPDATE wayskbh SET car_traffic = 'yes' 
 WHERE road_type IN
 ('motorvej', 'motortrafikvej', 'primaerrute', 'sekundaerrute/ringvej', 
-'stoerre vej','beboelsesvej', 'adgangsvej/parkering/privatvej_osv')
+'stoerre vej','beboelsesvej', 'adgangsvej/parkering/privatvej_osv', 'begraenset_biltrafik')
 OR highway =  'unclassified' AND "name" IS NOT NULL AND "access" NOT IN  
 ('no', 'restricted');
 
@@ -81,17 +79,17 @@ OR highway = 'cycleway'
 OR cycleway ILIKE '%designated%' 
 OR cycleway ILIKE '%crossing%'
 OR cycleway ILIKE '%lane%' 
-OR cycleway ILIKE '%opposite%' 
+OR cycleway ILIKE '%opposite_%' 
 OR cycleway ILIKE '%track%' 
 OR cycleway ILIKE '%yes%'
 OR "cycleway:left" ILIKE '%lane%'
 OR "cycleway:left" ILIKE '%opposite%'
 OR "cycleway:left" ILIKE '%track%'
 OR "cycleway:right" ILIKE '%lane%'
-OR "cycleway:right" ILIKE '%opposite%'
+OR "cycleway:right" ILIKE '%opposite_%'
 OR "cycleway:right" ILIKE '%track%'
 OR "cycleway:both" ILIKE '%lane%'
-OR "cycleway:both" ILIKE '%opposite%'
+OR "cycleway:both" ILIKE '%opposit_e%'
 OR "cycleway:both" ILIKE '%track%';
 
 -- Segments where cycling is specified as allowed or assumed allowed based on other attributes (mostly interesting for non-cycling infrastructure)
@@ -140,34 +138,44 @@ Cycleway:left/right are only used when no type has been assigned based on the ke
 UPDATE wayskbh SET cycling_infrastructure =
     (CASE
         WHEN "cycleway:left" = 'crossing' OR "cycleway:right" = 'crossing' THEN 'cykelbane i kryds'
-        WHEN "cycleway:left" = 'lane' AND "cycleway:right" = 'lane' THEN 'cykelbane'
-        WHEN "cycleway:left" = 'track' AND "cycleway:right" = 'track' THEN 'cykelsti'
+        WHEN "cycleway:left" = 'lane' AND "cycleway:right" = 'lane' THEN 'cykelbane_begge'
+        WHEN "cycleway:left" ILIKE '%track' AND "cycleway:right" ILIKE '%track' THEN 'cykelsti_begge'
+        WHEN "cycleway:left" IN ('lane', 'opposite_lane') AND "cycleway:right" IN ('lane','opposite_lane') 
+        THEN 'cykelbane_begge'
         ELSE cycling_infrastructure
     END)
 WHERE cycling_allowed = 'yes';
 
--- Roads with different types of cycling infrastructure in different sides
+-- Roads with different types of cycling infrastructure/tags in different sides
 UPDATE wayskbh SET cycling_infrastructure =
     (CASE
         WHEN ("cycleway:left" ILIKE '%track' AND ("cycleway:right" = 'lane' OR "cycleway:right" = 'opposite_lane')) 
-            OR ("cycleway:right" ILIKE '%track' AND ("cycleway:left" = 'lane' OR "cycleway:right" = 'opposite_lane'))
+            OR ("cycleway:right" ILIKE '%track' AND ("cycleway:left" = 'lane' OR "cycleway:left" = 'opposite_lane'))
             THEN 'cykelsti_cykelbane'
+        WHEN "cycleway:left" = 'track' AND "cycleway:right" = 'separate' THEN 'cykelsti'
+        WHEN "cycleway:right" = 'track' AND "cycleway:left" = 'separate' THEN 'cykelsti'
+        WHEN "cycleway:left" = 'lane' AND "cycleway:right" = 'separate' THEN 'cykelbane'
+        WHEN "cycleway:right" = 'lane' AND "cycleway:left" = 'separate' THEN 'cykelbane'
         ELSE cycling_infrastructure
     END)
 WHERE cycling_allowed = 'yes';
 
--- Roads with only cycling infrastructure in one side
--- Add is null!
+
+-- Roads with cycling infrastructure in only one side
 UPDATE wayskbh SET cycling_infrastructure =
     (CASE
-        WHEN "cycleway:left" = 'track' AND ("cycleway:right" NOT IN ('lane','track','shared_lane','separate', 'opposite_lane','opposite_track')
+        WHEN "cycleway:left" ILIKE '%track' AND ("cycleway:right" NOT IN ('lane','track','shared_lane','separate', 'opposite_lane','opposite_track')
             OR "cycleway:right" IS NULL) THEN 'cykelsti_enkeltsidet'
-        WHEN "cycleway:left" = 'lane' AND "cycleway:right" NOT IN ('lane','track','shared_lane','separate', 'opposite_lane','opposite_track')
-            THEN 'cykelbane_enkeltsidet'
-        WHEN "cycleway:right" = 'track' AND "cycleway:left" NOT IN ('lane','track','shared_lane','separate', 'opposite_lane','opposite_track')
-            THEN 'cykelsti_enkeltsidet'
-        WHEN "cycleway:right" = 'lane' AND "cycleway:left" NOT IN ('lane','track','shared_lane','separate', 'opposite_lane','opposite_track')
-            THEN 'cykelbane_enkeltsidet'
+        WHEN "cycleway:left" IN ('lane','opposite_lane') AND ("cycleway:right" NOT IN ('lane','track','shared_lane','separate', 'opposite_lane','opposite_track')
+            OR "cycleway:right" IS NULL) THEN 'cykelbane_enkeltsidet'
+        WHEN "cycleway:right" = ILIKE '%track' AND ("cycleway:left" NOT IN ('lane','track','shared_lane','separate', 'opposite_lane','opposite_track')
+            OR "cycleway:left" IS NULL) THEN 'cykelsti_enkeltsidet'
+        WHEN "cycleway:right" IN ('lane','opposite_lane') AND ("cycleway:left" NOT IN ('lane','track','shared_lane','separate', 'opposite_lane','opposite_track')
+            OR "cycleway:left" IS NULL) THEN 'cykelbane_enkeltsidet'
+        WHEN "cycleway:left" = 'shared_lane' AND ("cycleway:right" NOT IN ('lane','track','shared_lane','separate', 'opposite_lane','opposite_track')
+            OR "cycleway:right" IS NULL) THEN 'delt_koerebane_enkeltsidet'
+        WHEN "cycleway:right" = 'shared_lane' AND ("cycleway:left" NOT IN ('lane','track','shared_lane','separate', 'opposite_lane','opposite_track')
+            OR "cycleway:left" IS NULL) THEN 'delt_koerebane_enkeltsidet'
         ELSE cycling_infrastructure
     END)
 WHERE cycling_allowed = 'yes';
@@ -178,13 +186,17 @@ UPDATE wayskbh SET cycling_infrastructure =
     (CASE
         WHEN ("cycleway:left" ILIKE '%track' AND "cycleway:right" = 'shared_lane') 
             OR ("cycleway:left" = 'shared_lane' AND "cycleway:right" ILIKE '%track')
-            THEN 'cykelsti_og_delt_bane'
+            THEN 'cykelsti_og_delt_koerebane'
         WHEN ("cycleway:left" IN ('lane','opposite_lane') AND "cycleway:right" = 'shared_lane') 
             OR ("cycleway:left" = 'shared_lane' AND "cycleway:right" IN ('lane','opposite_lane'))
-            THEN 'cykelbane_og_delt_bane'
+            THEN 'cykelbane_og_delt_koerebane'
         ELSE cycling_infrastructure
         END)
 WHERE cycling_allowed = 'yes';
+
+-- Paths with cycling
+UPDATE wayskbh SET cycling_infrastructure = 'sti_cykling_tilladt' 
+WHERE highway = 'path' AND cycling_infrastructure = 'yes';
 
 -- Categorising path types
 UPDATE wayskbh SET path_segregation =
@@ -201,10 +213,34 @@ WHERE road_type IN ('sti','gangsti', 'cykelsti', 'gaagade_gangomraade');
 UPDATE wayskbh SET cycling_against = 'yes'
 WHERE cycleway ILIKE '%opposite%'
 OR (oneway IN ('yes', 'true')
-AND ("oneway:bicycle" = 'no' OR "cycleway:left" ILIKE '%opposite%' 
+    AND ("oneway:bicycle" = 'no' OR "cycleway:left" ILIKE '%opposite%' 
     OR "cycleway:right" ILIKE '%opposite%')
 );
 
+-- Bike lanes and tracks with bidirectional cycling
+UPDATE wayskbh SET cycling_infrastructure = 'cykelsti_dobbeltrettet'
+WHERE "highway" =  'cycleway' AND (oneway = 'no' OR "oneway:bicycle" = 'no');
+
+-- Cycle lane separated from car street (cykelsti i eget trace)
+UPDATE wayskbh SET cy_infra_separated = 'true' WHERE highway = 'cycleway';
+UPDATE wayskbh SET cy_infra_separated = 'false' WHERE cycling_infrastructure IS NOT NULL 
+AND highway != 'cycleway';
+
+--Determining whether the segment of cycling infrastructure runs along a street or not
+-- Along a street with car traffic
+UPDATE wayskbh SET along_street = 'true' WHERE car_traffic = 'yes' AND cycling_infrastructure IS NOT NULL;
+
+-- Capturing cycleways digitized as individual ways both still running parallel to a street
+CREATE VIEW cycleways AS (SELECT name, highway, road_type, cycling_infrastructure, along_street FROM wayskbh 
+WHERE highway = 'cycleway');
+CREATE VIEW car_roads AS (SELECT name, highway, road_type, geometry FROM wayskbh 
+WHERE car_traffic = 'yes');
+
+UPDATE cycleways c SET along_street = 'true'
+FROM car_roads cr WHERE c.name = cr.name;
+
+DROP VIEW cycleways;
+DROP VIEW car_roads;
 
 -- Segments with on street parking
 UPDATE wayskbh SET on_street_park = 'yes' 
@@ -231,32 +267,6 @@ UPDATE wayskbh SET surface_assumed =
         ELSE 'ukendt'
     END)
 WHERE surface_assumed IS NULL;
-
-
-
-/* Determining whether the segment of cycling infrastructure runs along a street or not
-
--- Potentially combine with step that connects road ids from GeoDK data, or other data source
--- Add something here - use a buffer to find segments which are along a street? 
--- If more than xxx % of segment within a xx meter buffer of car street, then along a street
--- For all in ('sti','gangsti','cykel- og gangsti', 'cykelsti', 'gaagade_gangomraade', 'trappe')
-
-UPDATE wayskbh SET cycling_infrastructure = 'cykelinfrastruktur langs vej'
-WHERE car_traffic = 'yes' AND cycling_infrastructure = 'yes';
-
-CREATE VIEW cycleways AS (SELECT name, highway, road_type, cycling_infrastructure FROM wayskbh 
-WHERE highway = 'cycleway');
-CREATE VIEW car_roads AS (SELECT name, highway, road_type, geometry FROM wayskbh 
-WHERE car_traffic = 'yes');
-
-UPDATE cycleways c SET cycling_infrastructure = 'cykelinfrastruktur langs vej' 
-FROM car_roads cr WHERE c.name = cr.name;
-
-DROP VIEW cycleways;
-DROP VIEW car_roads;
-
-*/
-
 
 -- Cycling friendly segments
 /*

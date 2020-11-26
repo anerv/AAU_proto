@@ -8,10 +8,7 @@ import psycopg2 as pg
 import geopandas as gpd
 
 #%%
-#Setting table names
-ways_table = "osmways" + area_name
-nodes_table = "osmnodes" + area_name
-sa_table = "study_area" + area_name
+#Checking table names
 print('Table names are:', ways_table, nodes_table, sa_table)
 #%%
 

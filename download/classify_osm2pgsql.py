@@ -24,6 +24,38 @@ except (Exception, pg.Error) as error :
     print ("Error while connecting to PostgreSQL", error)
 
 #%%
+#Delecting unneccessary rows
+clear_rows_ways = 'DELETE FROM %s WHERE highway IS NULL' % ways_table
+#clear_rows_points = 'DELETE FROM %s WHERE XXX' % points_table
+#clear_rows_rel = 'DELETE FROM %s WHERE XXX' % rel_table
+
+#Deleting unneccessary columns
+cursor = connection.cursor()
+try:
+    cursor.execute(clear_rows_ways)
+    print('Rows deleted from', table_ways)
+except(Exception, pg.Error) as error:
+    print(error)
+
+with engine.connect() as connection:
+    try:
+        result = connection.execute(clear_rows_ways)
+        print('Rows deleted from', ways_table)
+    except(Exception) as error:
+        print('Problem deleting rows from', ways_table)
+    try:
+        result = connection.execute(copy_rel)
+        print('Copy of table made for osm relations')
+    except(Exception) as error:
+        print('Problem copying table for osm relations')
+    try:
+        result = connection.execute(copy_points)
+        print('Copy of table made for osm points')
+    except(Exception) as error:
+        print('Problem copying table for osm points')
+    
+#%%
+
 #Classifying ways table
 sql_file = open('classify_osm_waystable.sql','r')
 cursor = connection.cursor()
@@ -47,20 +79,19 @@ except(Exception) as error:
 
 #%%
 connection.commit()
-#%%
-# Testing the results
 
-#Add here
 #%%
 # Classifying relations table
 
 
 #Classyfing points table
 
-#Delecting unneccessary rows
+#%%
+# Testing the results
 
-#Deleting unneccessary columns
+#Add here
 
+#%%
 
 #Commiting changes and closing db connection
 connection.commit()

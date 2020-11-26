@@ -40,11 +40,7 @@ except(Exception) as error:
     print('Error while uploading study area data to database:', error)
 
 #%%
-#Setting table names
-ways_table = "ways" + area_name
-points_table = "points" + area_name
-rel_table = "rel" + area_name
-sa_table = "study_area" + area_name
+#Checking table names
 print('Table names are:', ways_table, points_table, rel_table, sa_table)
 
 #%%
