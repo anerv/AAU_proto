@@ -59,7 +59,7 @@ with engine.connect() as connection:
         result = connection.execute(copy_rel)
         print('Copy of table made for osm relations')
     except(Exception) as error:
-        print('Problem copying table for osm relations')
+        print('Problem copying table for osm relations') 
     try:
         result = connection.execute(copy_points)
         print('Copy of table made for osm points')
@@ -123,7 +123,7 @@ with engine.connect() as connection:
         print('Problem reprojecting relations table')
         print(error)
     try:
-        results = connection.execute(reproj4)
+        #results = connection.execute(reproj4)
         print('Study area reprojected')
     except(Exception) as error:
         print('Problem reprojecting study area table')
@@ -150,7 +150,7 @@ else:
 #Option to clip data to study area
 #Uncomment if data should be clipped to the extent of the study area + buffer
 
-'''
+
 clip_ways = "DELETE FROM %s AS ways USING %s AS boundary WHERE NOT ST_DWithin(ways.geometry, boundary.geometry, %d) AND NOT ST_Intersects(ways.geometry, boundary.geometry);" % (ways_table, sa_table, buffer)
 clip_points = "DELETE FROM %s AS points USING %s AS boundary WHERE NOT ST_DWithin(points.geometry, boundary.geometry, %d) AND NOT ST_Intersects(points.geometry, boundary.geometry);" % (points_table, sa_table, buffer)
 clip_rels =  "DELETE FROM %s AS rel USING %s AS boundary WHERE NOT ST_DWithin(rel.geometry, boundary.geometry, %d) AND NOT ST_Intersects(rel.geometry, boundary.geometry);" % (points_table, sa_table, buffer)
@@ -166,6 +166,6 @@ with engine.connect() as connection:
     except(Exception) as error:
         print(error)
 
-'''
+
 
 #%%

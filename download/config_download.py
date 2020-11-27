@@ -24,7 +24,7 @@ db_port = '5432'
 
 #Setting table names
 ways_table = "ways" + area_name
-points_table = "nodes" + area_name
+points_table = "points" + area_name
 rel_table = "rel" + area_name
 sa_table = "study_area" + area_name
 
