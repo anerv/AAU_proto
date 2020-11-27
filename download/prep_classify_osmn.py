@@ -27,7 +27,7 @@ except (Exception, pg.Error) as error :
 # Test if you can retrieve data from the database
 cursor = connection.cursor()
 sql_ways = "SELECT osmid, cycleway, highway, geometry FROM %s" % ways_table
-sql_nodes = "SELECT osmid, geometry FROM %s" % nodes_table
+sql_nodes = "SELECT osmid, geometry FROM %s" % points_table
 sql_sa = "SELECT* FROM %s" %sa_table
 
 

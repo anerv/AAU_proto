@@ -1,9 +1,9 @@
 '''
-This script runs several sql files to reclassify the osm data based on the original tags
+This script runs several sql script and files to reclassify the osm data based on the original tags
+
 TO DO
 
-- slet unødvendige kolonner fra ways, relations, points
-- klassificer ways
+- slet unødvendige kolonner fra relations, points
 - klassificer rel
 - klassificer points - hvilke vil jeg have?
 '''
@@ -11,6 +11,7 @@ TO DO
 #Importing modules
 import psycopg2 as pg
 from config_download import *
+import geopandas as gpd
 # %%
 # Connecting to the database
 try:
@@ -28,7 +29,7 @@ except (Exception, pg.Error) as error :
 #Delecting unneccessary rows
 clear_rows_ways = "DELETE FROM %s WHERE highway IS NULL OR highway IN ('raceway', 'platform')" % ways_table
 #clear_rows_points = 'DELETE FROM %s WHERE XXX' % points_table
-#clear_rows_rel = 'DELETE FROM %s WHERE XXX' % rel_table
+clear_rows_rel = "DELETE FROM %s WHERE route NOT IN ('fitness_trail' , 'foot' , 'hiking' , 'bicycle', 'road' )" % rel_table
 
 
 cursor = connection.cursor()
@@ -37,26 +38,35 @@ try:
     print('Rows deleted from', ways_table)
     #cursor.execute(clear_rows_points)
     #print('Rows deleted from', points_table)
-    #cursor.execute(clear_rows_rel)
-    #print('Rows deleted from', rel_table)
+    cursor.execute(clear_rows_rel)
+    print('Rows deleted from', rel_table)
 except(Exception, pg.Error) as error:
     print(error)
 
+connection.commit()
 #%%
 #Deleting unneccessary columns
 
 #Columns to be dropped from ways table
-col_ways = ['admin_level', 'amenity', 'area', 'boundary', 'harbour', 'horse', 'landuse', '"lanes:backward"', '"lanes:forward"', 'leisure', 'noexit', 'operator', 'railway', 'shop', 'traffic_sign', '"turn:lanes"', '"turn:backward"', '"turn:forward"', 'water', 'waterway', 'wetland', 'wood']
-del_ways = ', DROP COLUMN '.join(col_ways)
-del_ways = 'ALTER TABLE %s ' % ways_table + 'DROP COLUMN ' + del_ways + ';'
+ways_col = ['admin_level', 'amenity', 'area', 'boundary', 'harbour', 'horse', 'landuse', '"lanes:backward"', '"lanes:forward"', 'leisure', 'noexit', 'operator', 'railway', 'shop', 'traffic_sign', '"turn:lanes"', '"turn:backward"', '"turn:forward"', 'water', 'waterway', 'wetland', 'wood']
+ways_del = ', DROP COLUMN '.join(col_ways)
+ways_del = 'ALTER TABLE %s ' % ways_table + 'DROP COLUMN ' + del_ways + ';'
+
+#Columns to be dropped from relations table
+
+#%%
+rel_useful_cols = ['osmid','operator','ref','route',]
+rel_query = "SELECT * FROM %s" % rel_table
+relations = gpd.read_postgis(rel_query, connection, geom_col='geometry')
+rel_org_cols = list(relations.columns)
+rel_cols_del = [i for i in rel_org_cols if i not in rel_useful_cols]
 #%%
 
-#Columns to be dropped from rel table
 #Columns to be dropped from points table
 
 cursor = connection.cursor()
 try:
-    cursor.execute(del_ways)
+    cursor.execute(ways_del)
     print('Columns deleted from', ways_table)
     #cursor.execute(clear_rows_points)
     #print('Rows deleted from', points_table)
