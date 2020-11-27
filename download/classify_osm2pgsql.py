@@ -24,36 +24,49 @@ except (Exception, pg.Error) as error :
     print ("Error while connecting to PostgreSQL", error)
 
 #%%
+
 #Delecting unneccessary rows
-clear_rows_ways = 'DELETE FROM %s WHERE highway IS NULL' % ways_table
+clear_rows_ways = "DELETE FROM %s WHERE highway IS NULL OR highway IN ('raceway', 'platform')" % ways_table
 #clear_rows_points = 'DELETE FROM %s WHERE XXX' % points_table
 #clear_rows_rel = 'DELETE FROM %s WHERE XXX' % rel_table
 
-#Deleting unneccessary columns
+
 cursor = connection.cursor()
 try:
     cursor.execute(clear_rows_ways)
-    print('Rows deleted from', table_ways)
+    print('Rows deleted from', ways_table)
+    #cursor.execute(clear_rows_points)
+    #print('Rows deleted from', points_table)
+    #cursor.execute(clear_rows_rel)
+    #print('Rows deleted from', rel_table)
 except(Exception, pg.Error) as error:
     print(error)
 
-with engine.connect() as connection:
-    try:
-        result = connection.execute(clear_rows_ways)
-        print('Rows deleted from', ways_table)
-    except(Exception) as error:
-        print('Problem deleting rows from', ways_table)
-    try:
-        result = connection.execute(copy_rel)
-        print('Copy of table made for osm relations')
-    except(Exception) as error:
-        print('Problem copying table for osm relations')
-    try:
-        result = connection.execute(copy_points)
-        print('Copy of table made for osm points')
-    except(Exception) as error:
-        print('Problem copying table for osm points')
-    
+#%%
+#Deleting unneccessary columns
+
+#Columns to be dropped from ways table
+col_ways = ['admin_level', 'amenity', 'area', 'boundary', 'harbour', 'horse', 'landuse', '"lanes:backward"', '"lanes:forward"', 'leisure', 'noexit', 'operator', 'railway', 'shop', 'traffic_sign', '"turn:lanes"', '"turn:backward"', '"turn:forward"', 'water', 'waterway', 'wetland', 'wood']
+del_ways = ', DROP COLUMN '.join(col_ways)
+del_ways = 'ALTER TABLE %s ' % ways_table + 'DROP COLUMN ' + del_ways + ';'
+#%%
+
+#Columns to be dropped from rel table
+#Columns to be dropped from points table
+
+cursor = connection.cursor()
+try:
+    cursor.execute(del_ways)
+    print('Columns deleted from', ways_table)
+    #cursor.execute(clear_rows_points)
+    #print('Rows deleted from', points_table)
+    #cursor.execute(clear_rows_rel)
+    #print('Rows deleted from', rel_table)
+except(Exception, pg.Error) as error:
+    print(error)
+
+#%%
+connection.commit()
 #%%
 
 #Classifying ways table
@@ -77,14 +90,15 @@ except(Exception) as error:
     except (Exception, pg.Error) as error :
         print ("Error while connecting to PostgreSQL", error)
 
-#%%
 connection.commit()
-
 #%%
+
 # Classifying relations table
 
 
 #Classyfing points table
+
+connection.commit()
 
 #%%
 # Testing the results

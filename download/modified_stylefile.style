@@ -103,7 +103,7 @@ way        cycleway:both:width text  linear
 way        cycleway:surface  text    linear
 node,way   disused      text         linear
 node       ele          text         linear
-node,way   flashing_ligts    text    linear
+node,way   flashing_lights    text   linear
 node,way   foot         text         linear
 node,way   harbour      text         polygon
 node,way   highway      text         linear
