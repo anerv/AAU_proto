@@ -49,6 +49,7 @@ copy_ways = "CREATE TABLE %s AS SELECT * FROM planet_osm_line WHERE osm_id > 0;"
 copy_points = "CREATE TABLE %s AS TABLE planet_osm_point;" % points_table
 copy_rel = "CREATE TABLE %s AS SELECT * FROM planet_osm_line WHERE osm_id < 0;" % rel_table
 
+#OBS rewrite to function!
 with engine.connect() as connection:
     try:
         result = connection.execute(copy_ways)
@@ -73,6 +74,7 @@ rename1 = 'ALTER TABLE %s RENAME COLUMN way TO geometry;' % ways_table
 rename2 = 'ALTER TABLE %s RENAME COLUMN way TO geometry;' % points_table
 rename3 = 'ALTER TABLE %s RENAME COLUMN way TO geometry;' % rel_table
 
+#OBS rewrite to function!
 with engine.connect() as connection:
     try:
         result = connection.execute(rename1)
@@ -103,6 +105,7 @@ reproj3 = "ALTER TABLE %s ALTER COLUMN geometry TYPE geometry(LINESTRING,%d) USI
 
 reproj4 = "ALTER TABLE %s ALTER COLUMN geometry TYPE geometry(MULTIPOLYGON,%d) USING ST_Transform(geometry,%d)" % (sa_table, crs, crs)
 
+#OBS rewrite to function!
 with engine.connect() as connection:
     try:
         result = connection.execute(reproj1)
@@ -150,6 +153,7 @@ else:
 #Option to clip data to study area
 #Uncomment if data should be clipped to the extent of the study area + buffer
 
+#OBS rewrite to function!
 
 clip_ways = "DELETE FROM %s AS ways USING %s AS boundary WHERE NOT ST_DWithin(ways.geometry, boundary.geometry, %d) AND NOT ST_Intersects(ways.geometry, boundary.geometry);" % (ways_table, sa_table, buffer)
 clip_points = "DELETE FROM %s AS points USING %s AS boundary WHERE NOT ST_DWithin(points.geometry, boundary.geometry, %d) AND NOT ST_Intersects(points.geometry, boundary.geometry);" % (points_table, sa_table, buffer)

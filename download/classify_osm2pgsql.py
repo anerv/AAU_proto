@@ -48,6 +48,8 @@ connection.commit()
 #%%
 #Deleting unneccessary columns
 
+#OBS rewrite to function!
+
 #Columns to be dropped from ways table
 ways_col = ['admin_level', 'amenity', 'area', 'boundary', 'harbour', 'horse', 'landuse', '"lanes:backward"', '"lanes:forward"', 'leisure', 'noexit', 'operator', 'railway', 'shop', 'traffic_sign', '"turn:lanes"', '"turn:backward"', '"turn:forward"', 'water', 'waterway', 'wetland', 'wood']
 ways_del = ', DROP COLUMN '.join(ways_col)
