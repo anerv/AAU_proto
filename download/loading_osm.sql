@@ -8,10 +8,10 @@ Here a modified style file is used to get all relevant tags as individual column
 */
 
 CREATE DATABASE osmbike;
-\CONNECT osmbike;
+\connect osmbike;
 CREATE EXTENSION postgis;
 CREATE EXTENSION postgis_topology;
 CREATE EXTENSION hstore;
 
 --Modify database information as needed
-osm2pgsql -c -d cphbike -U postgres -H localhost -W -S "C:\Users\viero\OneDrive\Documents\AAU\AAU_prototype\download\modified_stylefile.style" "C:\Users\viero\OneDrive\Documents\AAU\AAU_prototype\download\copenhagen.osm.pbf"
+osm2pgsql -c -d cphbike -U postgres -H localhost -W -S "C:\Users\OA03FG\Aalborg Universitet\Urban Research group - General\AAU data\AAU grunddata\PROTOTYPE\AAU_proto\download\modified_stylefile.style" "C:\Users\OA03FG\Aalborg Universitet\Urban Research group - General\AAU data\AAU grunddata\PROTOTYPE\AAU_proto\download\copenhagen.osm.pbf"
