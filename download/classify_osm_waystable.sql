@@ -10,6 +10,7 @@ ALTER TABLE wayskbh
 ADD COLUMN car_traffic VARCHAR DEFAULT NULL,  
 ADD COLUMN road_type VARCHAR DEFAULT NULL,  
 ADD COLUMN cycling_infrastructure VARCHAR DEFAULT NULL,
+ADD COLUMN cycling_infra_simple VARCHAR DEFAULT NULL,
 ADD COLUMN path_segregation VARCHAR DEFAULT NULL,  
 ADD COLUMN along_street BOOLEAN DEFAULT NULL,  
 ADD COLUMN cy_infra_separated BOOLEAN DEFAULT NULL,
@@ -85,7 +86,7 @@ WHERE road_type IN
 ('motorvej', 'motortrafikvej', 'primaerrute', 'sekundaerrute/ringvej', 
 'stoerre vej','beboelsesvej', 'adgangsvej/parkering/privatvej_osv', 'begraenset_biltrafik')
 OR highway =  'unclassified' AND "name" IS NOT NULL AND "access" NOT IN  
-('no', 'restricted');
+('no', 'restricted') OR (maxspeed > 15);
 
 
 -- Finding all segments with cycling infrastructure
@@ -241,6 +242,22 @@ OR (oneway IN ('yes', 'true')
 UPDATE wayskbh SET cycling_infrastructure = 'cykelsti_dobbeltrettet'
 WHERE "highway" =  'cycleway' AND (oneway = 'no' OR "oneway:bicycle" = 'no');
 
+-- Updating a simplified version of cycling_infrastructure
+UPDATE wayskbh SET cycling_infra_simple = 
+    (CASE
+        WHEN cycling_infrastructure IN ('cykelbane','cykelbane_begge','cykelbane_enkeltsidet')
+            THEN 'cykelbane'
+        WHEN cycling_infrastructure IN ('cykelsti','cykelsti_begge','cykelsti_enkeltsidet')
+            THEN 'cykelsti'
+        WHEN cycling_infrastructure = IN ('delt_koerebane','delt_koerebane_enkeltsidet')
+            THEN 'delt_koerebane'
+        WHEN road_type IN ('sti','gangsti') AND (cycling_infrastructure IS NULL OR cycling_infrastructure = 'yes') AND cycling_allowed = 'yes'
+            THEN 'sti_cykling_tilladt'
+        ELSE cycling_infrastructure
+    END)
+WHERE cycling_infrastructure IS NOT NULL;
+
+
 -- Cycle lane separated from car street (cykelsti i eget trace)
 UPDATE wayskbh SET cy_infra_separated = 'true' WHERE highway = 'cycleway';
 UPDATE wayskbh SET cy_infra_separated = 'false' WHERE cycling_infrastructure IS NOT NULL 
@@ -291,19 +308,5 @@ UPDATE wayskbh SET surface_assumed =
     END)
 WHERE surface_assumed IS NULL;
 
--- Cycling friendly segments
-/*
-Should both be based on elevation, surface, speed, number of lanes, presence of cycling infrastructure
-cycle friendly paths etc
 
 
-OR (highway IN ('path', 'track') AND 
-("surface" ILIKE asphalt
-OR "surface" ILIKE '%compacted%' 
-OR "surface" ILIKE '%concrete%'
-OR "surface" ILIKE '%paved%' 
-OR "surface" ILIKE '%paving_stones%'));
-
-*/
-
--- Finally, dealing with unclassified segments

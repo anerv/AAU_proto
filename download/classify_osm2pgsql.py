@@ -2,11 +2,6 @@
 This script runs several sql script and files to reclassify the osm data based on the original tags
 Unused columns and rows are deleted (but can still be found in the table created from the original osm file)
 
-TO DO
-
-- slet unødvendige kolonner fra points
-- klassificer rel
-- klassificer points - hvilke vil jeg have?
 '''
 #%%
 #Importing modules
@@ -78,11 +73,11 @@ points_del = 'ALTER TABLE %s ' % points_table + 'DROP COLUMN "' + points_del + '
 
 cursor = connection.cursor()
 try:
-    #cursor.execute(ways_del)
+    cursor.execute(ways_del)
     print('Columns deleted from', ways_table)
     cursor.execute(points_del)
     print('Columns deleted from', points_table)
-    #cursor.execute(rel_del)
+    cursor.execute(rel_del)
     print('Columns deleted from', rel_table)
 except(Exception, pg.Error) as error:
     print(error)
@@ -92,11 +87,12 @@ connection.commit()
 #%%
 
 #Classifying ways table
-sql_file = open('classify_osm_waystable.sql','r')
+ways_classi = open('classify_osm_waystable.sql','r')
 cursor = connection.cursor()
 
+#OBS rewrite as function!
 try:
-    cursor.execute(sql_file.read())
+    cursor.execute(ways_classi.read())
     print('Ways data reclassified')
 except(Exception) as error:
     print(error)
@@ -115,10 +111,26 @@ except(Exception) as error:
 connection.commit()
 #%%
 
-# Classifying relations table
-
-
 #Classyfing points table
+ways_classi = open('classify_osm_points.sql','r')
+cursor = connection.cursor()
+
+try:
+    cursor.execute(ways_classi.read())
+    print('Points data reclassified')
+except(Exception) as error:
+    print(error)
+    print('Reconnecting to the database. Please fix error before rerunning')
+    connection.close()
+    try:
+        connection = pg.connect(database = database_name, user = db_user,
+                                    password = db_password,
+                                    host = db_host)
+
+        print('You are connected to the database %s!' % database_name)
+
+    except (Exception, pg.Error) as error :
+        print ("Error while connecting to PostgreSQL", error)
 
 connection.commit()
 
