@@ -28,7 +28,7 @@ def connect_pg(db_name, db_user, db_password, db_host='localhost'):
     
 #%%
 #Testing
-#connection = connect_pg(db_name, db_user, db_password)
+connection = connect_pg(db_name, db_user, db_password)
 #%%
 #Function for running sql query using psycopg2
 def run_query_pg(query, connection,success='Query successful!',fail='Query failed!',commit=True,close=False):
@@ -40,6 +40,7 @@ def run_query_pg(query, connection,success='Query successful!',fail='Query faile
     You must be connected to the database before using the function
     If query fails and returns error the function automatically reconnects to database
     '''
+    import psycopg2 as pg
     cursor = connection.cursor()
 
     #Check whether query is a sql statement as string or a filepath to an sql file
@@ -62,11 +63,11 @@ def run_query_pg(query, connection,success='Query successful!',fail='Query faile
         print('Reconnecting to the database. Please fix error before rerunning')
         connection.close()
         try:
-            connection = pg.connect(database = database_name, user = db_user,
+            connection = pg.connect(database = db_name, user = db_user,
                                         password = db_password,
                                         host = db_host)
 
-            print('You are connected to the database %s!' % database_name)
+            print('You are connected to the database %s!' % db_name)
 
         except (Exception, pg.Error) as error :
             print("Error while connecting to PostgreSQL", error)
@@ -87,7 +88,7 @@ q1 = "SELECT * FROM wayskbh WHERE route_name ILIKE '%c%'"
 q2 = 'test_sql.sql'
 
 # %%
-#test1 = run_query_pg(q1,connection, commit=False)
+test1 = run_query_pg(q1,connection, commit=False)
 #%%
 #test2 = run_query_pg(q1,connection, commit=False)
 

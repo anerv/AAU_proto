@@ -17,6 +17,7 @@ SELECT w.osm_id, w.road_type, w.cycling_infrastructure, w.geometry,
 	ST_ContainsProperly(b.geometry,w.geometry)
 	WHERE b.route = 'bicycle' ORDER BY osm_id;
 
+-- Use STRUCT??
 CREATE VIEW ways_rel AS (SELECT w.osm_id, ARRAY_AGG(b.name ORDER BY b.name) AS name, ARRAY_AGG(b.operator ORDER BY b.name) AS operator, ARRAY_AGG(b.ref ORDER BY b.name) AS ref 
 	FROM wayskbh w JOIN buffer b ON
 	ST_ContainsProperly(b.geometry,w.geometry)

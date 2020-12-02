@@ -20,13 +20,13 @@ except(Exception) as error:
 
 #%%
 # Creating engine to connect to database
-engine_info = 'postgresql://' + db_user +':'+ db_password + '@' + db_host + ':' + db_port + '/' + database_name
+engine_info = 'postgresql://' + db_user +':'+ db_password + '@' + db_host + ':' + db_port + '/' + db_name
 
 #Connecting to database
 try:
     engine = sqlalchemy.create_engine(engine_info)
     engine.connect()
-    print('You are connected to the database %s!' % database_name)
+    print('You are connected to the database %s!' % db_name)
 except(Exception, sqlalchemy.exc.OperationalError) as error:
     print('Error while connecting to the dabase!', error)
 
