@@ -10,7 +10,7 @@ fp_sa = r"C:\Users\OA03FG\Aalborg Universitet\Urban Research group - General\AAU
 layer_name ="Copenhagen_boundary"
 
 #Size of buffer in metres
-buffer = 200
+buffer = 150
 
 # Define CRS
 crs = 25832

@@ -27,6 +27,7 @@ ALTER TABLE wayskbh
 DROP COLUMN car_traffic, 
 DROP COLUMN road_type, 
 DROP COLUMN cycling_infrastructure,
+DROP COLUMN cycling_infra_simple,
 DROP COLUMN path_segregation, 
 DROP COLUMN along_street,
 DROP COLUMN cy_infra_separated,
@@ -86,7 +87,7 @@ WHERE road_type IN
 ('motorvej', 'motortrafikvej', 'primaerrute', 'sekundaerrute/ringvej', 
 'stoerre vej','beboelsesvej', 'adgangsvej/parkering/privatvej_osv', 'begraenset_biltrafik')
 OR highway =  'unclassified' AND "name" IS NOT NULL AND "access" NOT IN  
-('no', 'restricted') OR (maxspeed > 15);
+('no', 'restricted') OR (maxspeed::integer > 15);
 
 
 -- Finding all segments with cycling infrastructure
@@ -249,13 +250,14 @@ UPDATE wayskbh SET cycling_infra_simple =
             THEN 'cykelbane'
         WHEN cycling_infrastructure IN ('cykelsti','cykelsti_begge','cykelsti_enkeltsidet')
             THEN 'cykelsti'
-        WHEN cycling_infrastructure = IN ('delt_koerebane','delt_koerebane_enkeltsidet')
+        WHEN cycling_infrastructure IN ('delt_koerebane','delt_koerebane_enkeltsidet')
             THEN 'delt_koerebane'
-        WHEN road_type IN ('sti','gangsti') AND (cycling_infrastructure IS NULL OR cycling_infrastructure = 'yes') AND cycling_allowed = 'yes'
+        WHEN road_type IN ('sti','gangsti') AND cycling_infrastructure IS NULL AND cycling_allowed = 'yes'
             THEN 'sti_cykling_tilladt'
+        WHEN cycling_infrastructure = 'yes' THEN 'andet'
         ELSE cycling_infrastructure
     END)
-WHERE cycling_infrastructure IS NOT NULL;
+WHERE cycling_allowed = 'yes';
 
 
 -- Cycle lane separated from car street (cykelsti i eget trace)

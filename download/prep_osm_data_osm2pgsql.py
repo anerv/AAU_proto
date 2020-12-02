@@ -150,11 +150,38 @@ if check_ways == check_points == check_rel == check_sa:
 else:
     print('All tables are not in the same projection!')
 #%%
+#Create spatial indexes
+index_ways = "CREATE INDEX %s_geom_idx ON %s USING GIST (geometry);" % (ways_table,ways_table)
+index_rel = "CREATE INDEX %s_geom_idx ON %s USING GIST (geometry);" % (rel_table,rel_table)
+index_points ="CREATE INDEX %s_geom_idx ON %s USING GIST (geometry);" % (points_table,points_table)
+
+#OBS rewrite to function!
+with engine.connect() as connection:
+    try:
+        result = connection.execute(index_ways)
+        print('Index created')
+    except(Exception) as error:
+        print('Problem creating spatial index')
+        print(error)
+    try:
+        result = connection.execute(index_rel)
+        print('Index created')
+    except(Exception) as error:
+        print('Problem creating spatial index')
+        print(error)
+    try:
+        result = connection.execute(index_points)
+        print('Index created')
+    except(Exception) as error:
+        print('Problem creating spatial index')
+        print(error)
+ 
+#%%
 #Option to clip data to study area
 #Uncomment if data should be clipped to the extent of the study area + buffer
 
 #OBS rewrite to function!
-
+'''
 clip_ways = "DELETE FROM %s AS ways USING %s AS boundary WHERE NOT ST_DWithin(ways.geometry, boundary.geometry, %d) AND NOT ST_Intersects(ways.geometry, boundary.geometry);" % (ways_table, sa_table, buffer)
 clip_points = "DELETE FROM %s AS points USING %s AS boundary WHERE NOT ST_DWithin(points.geometry, boundary.geometry, %d) AND NOT ST_Intersects(points.geometry, boundary.geometry);" % (points_table, sa_table, buffer)
 clip_rels =  "DELETE FROM %s AS rel USING %s AS boundary WHERE NOT ST_DWithin(rel.geometry, boundary.geometry, %d) AND NOT ST_Intersects(rel.geometry, boundary.geometry);" % (points_table, sa_table, buffer)
@@ -169,6 +196,6 @@ with engine.connect() as connection:
         print('The relations dataset have been clipped!')
     except(Exception) as error:
         print(error)
-
+'''
 
 #%%

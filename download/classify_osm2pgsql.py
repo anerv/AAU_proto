@@ -24,7 +24,6 @@ except (Exception, pg.Error) as error :
 
 #Delecting unneccessary rows
 clear_rows_ways = "DELETE FROM %s WHERE highway IS NULL OR highway IN ('raceway', 'platform')" % ways_table
-#clear_rows_points = 'DELETE FROM %s WHERE XXX' % points_table
 clear_rows_rel = "DELETE FROM %s WHERE route NOT IN ('fitness_trail' , 'foot' , 'hiking' , 'bicycle', 'road' ) OR route IS NULL" % rel_table
 
 
@@ -32,8 +31,6 @@ cursor = connection.cursor()
 try:
     cursor.execute(clear_rows_ways)
     print('Rows deleted from', ways_table)
-    #cursor.execute(clear_rows_points)
-    #print('Rows deleted from', points_table)
     cursor.execute(clear_rows_rel)
     print('Rows deleted from', rel_table)
 except(Exception, pg.Error) as error:
@@ -73,11 +70,11 @@ points_del = 'ALTER TABLE %s ' % points_table + 'DROP COLUMN "' + points_del + '
 
 cursor = connection.cursor()
 try:
-    cursor.execute(ways_del)
+    #cursor.execute(ways_del)
     print('Columns deleted from', ways_table)
     cursor.execute(points_del)
     print('Columns deleted from', points_table)
-    cursor.execute(rel_del)
+    #cursor.execute(rel_del)
     print('Columns deleted from', rel_table)
 except(Exception, pg.Error) as error:
     print(error)
@@ -112,11 +109,11 @@ connection.commit()
 #%%
 
 #Classyfing points table
-ways_classi = open('classify_osm_points.sql','r')
+points_classi = open('classify_osm_points.sql','r')
 cursor = connection.cursor()
 
 try:
-    cursor.execute(ways_classi.read())
+    cursor.execute(points_classi.read())
     print('Points data reclassified')
 except(Exception) as error:
     print(error)
