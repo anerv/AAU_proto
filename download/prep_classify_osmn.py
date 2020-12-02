@@ -6,22 +6,14 @@ This script reclassifies the original OSM data for data downloaded using osmnx a
 from config_download import *
 import psycopg2 as pg
 import geopandas as gpd
-
+from database_functions import connect_pg, run_query_pg
 #%%
 #Checking table names
-print('Table names are:', ways_table, nodes_table, sa_table)
+print('Table names are:', ways_table, points_table, sa_table)
 #%%
 
 #Connecting to database 
-try:
-    connection = pg.connect(database = database_name, user = db_user,
-                                  password = db_password,
-                                  host = db_host)
-
-    print('You are connected to the database %s!' % database_name)
-
-except (Exception, pg.Error) as error :
-    print ("Error while connecting to PostgreSQL", error)
+connection = connect_pg(db_name, db_user, db_password)
 
 #%%
 # Test if you can retrieve data from the database
@@ -30,7 +22,7 @@ sql_ways = "SELECT osmid, cycleway, highway, geometry FROM %s" % ways_table
 sql_nodes = "SELECT osmid, geometry FROM %s" % points_table
 sql_sa = "SELECT* FROM %s" %sa_table
 
-
+#OBS rewrite to function (entire file)
 try:
     cursor.execute(sql_ways)
     rows = cursor.fetchall()

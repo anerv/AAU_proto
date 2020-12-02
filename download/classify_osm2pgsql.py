@@ -7,18 +7,11 @@ Unused columns and rows are deleted (but can still be found in the table created
 #Importing modules
 import psycopg2 as pg
 from config_download import *
+from database_functions import connect_pg, run_query_pg
 import geopandas as gpd
 # %%
 # Connecting to the database
-try:
-    connection = pg.connect(database = database_name, user = db_user,
-                                  password = db_password,
-                                  host = db_host)
-
-    print('You are connected to the database %s!' % database_name)
-
-except (Exception, pg.Error) as error :
-    print ("Error while connecting to PostgreSQL", error)
+connection = connect_pg(db_name, db_user, db_password)
 
 #%%
 
@@ -112,9 +105,35 @@ connection.commit()
 points_classi = open('classify_osm_points.sql','r')
 cursor = connection.cursor()
 
+#OBS! Rewrite to function!
 try:
     cursor.execute(points_classi.read())
     print('Points data reclassified')
+except(Exception) as error:
+    print(error)
+    print('Reconnecting to the database. Please fix error before rerunning')
+    connection.close()
+    try:
+        connection = pg.connect(database = database_name, user = db_user,
+                                    password = db_password,
+                                    host = db_host)
+
+        print('You are connected to the database %s!' % database_name)
+
+    except (Exception, pg.Error) as error :
+        print ("Error while connecting to PostgreSQL", error)
+
+connection.commit()
+
+#%%
+#Joining data about cycle routes to ways data
+ways_relations = open('join_relations_to_ways.sql','r')
+cursor = connection.cursor()
+
+#OBS rewrite as function!
+try:
+    cursor.execute(ways_relations.read())
+    print('Relations data joined!')
 except(Exception) as error:
     print(error)
     print('Reconnecting to the database. Please fix error before rerunning')

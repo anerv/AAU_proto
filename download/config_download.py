@@ -19,7 +19,7 @@ crs = 25832
 db_user = 'postgres'
 db_password = 'AAU20'
 db_host = 'localhost'
-database_name = 'cphbike'
+db_name = 'cphbike'
 db_port = '5432'
 
 #Setting table names

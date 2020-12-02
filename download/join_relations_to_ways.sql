@@ -17,12 +17,18 @@ SELECT w.osm_id, w.road_type, w.cycling_infrastructure, w.geometry,
 	ST_ContainsProperly(b.geometry,w.geometry)
 	WHERE b.route = 'bicycle' ORDER BY osm_id;
 
-UPDATE wayskbh 
-    ADD COLUMN route_name VARCHAR, 
-    ADD COLUMN route_operator VARCHAR, 
-    ADD COLUMN route_ref VARCHAR;
+CREATE VIEW ways_rel AS (SELECT w.osm_id, ARRAY_AGG(b.name ORDER BY b.name) AS name, ARRAY_AGG(b.operator ORDER BY b.name) AS operator, ARRAY_AGG(b.ref ORDER BY b.name) AS ref 
+	FROM wayskbh w JOIN buffer b ON
+	ST_ContainsProperly(b.geometry,w.geometry)
+	WHERE b.route = 'bicycle' GROUP BY osm_id);
 
-/*
-Python dataframe?
-Loop through ids.
-For all ids i combine col values to list (for all three rel cols)
+ALTER TABLE wayskbh 
+	ADD COLUMN route_name VARCHAR, 
+	ADD COLUMN route_operator VARCHAR, 
+	ADD COLUMN route_ref VARCHAR;
+
+UPDATE wayskbh w SET route_name = r.name, route_operator = operator, route_ref = r.ref 
+    FROM ways_rel r WHERE w.osm_id = r.osm_id;
+
+DROP VIEW ways_rel;
+DROP MATERIALIZED VIEW buffer;
