@@ -28,10 +28,10 @@ def connect_pg(db_name, db_user, db_password, db_host='localhost'):
     
 #%%
 #Testing
-connection = connect_pg(db_name, db_user, db_password)
+#connection = connect_pg(db_name, db_user, db_password)
 #%%
 #Function for running sql query using psycopg2
-def run_query_pg(query, connection,success='Query successful!',fail='Query failed!',commit=True,close=False):
+def run_query_pg(query,connection, success='Query successful!',fail='Query failed!',commit=True,close=False):
     
     '''
     Function for running a sql query uding psycopg2
@@ -41,6 +41,7 @@ def run_query_pg(query, connection,success='Query successful!',fail='Query faile
     If query fails and returns error the function automatically reconnects to database
     '''
     import psycopg2 as pg
+
     cursor = connection.cursor()
 
     #Check whether query is a sql statement as string or a filepath to an sql file
@@ -53,10 +54,26 @@ def run_query_pg(query, connection,success='Query successful!',fail='Query faile
         else:
             cursor.execute(query)
         
-        result = cursor.fetchall()
-        rows_changed = len(result)
         print(success)
-        print(rows_changed,'rows were updated or retrieved')
+        try:
+            result = cursor.fetchall()
+            rows_changed = len(result)
+            print(rows_changed,'rows were updated or retrieved')
+            return result
+
+        except:
+            pass
+
+        if commit:
+            connection.commit()
+            print('Changes commited')
+        else:
+            print('Changes not commited')
+        if close:
+            connection.close()
+            print('Connection closed')
+    
+
     except(Exception) as error:
         print(fail)
         print(error)
@@ -72,24 +89,17 @@ def run_query_pg(query, connection,success='Query successful!',fail='Query faile
         except (Exception, pg.Error) as error :
             print("Error while connecting to PostgreSQL", error)
 
-    if commit:
-        connection.commit()
-        print('Changes commited')
-    else:
-        print('Changes not commited')
-    if close:
-        connection.close()
-        print('Connection closed')
     
-    return result
 #%%
 #Testing
 q1 = "SELECT * FROM wayskbh WHERE route_name ILIKE '%c%'"
 q2 = 'test_sql.sql'
 
 # %%
-test1 = run_query_pg(q1,connection, commit=False)
+#test1 = run_query_pg(q1,connection, commit=False)
 #%%
 #test2 = run_query_pg(q1,connection, commit=False)
 
 # %%
+#Function for connecting to database using sqlalchemy
+# Function for loading data to database using sqlalchemy
