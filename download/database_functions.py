@@ -34,7 +34,7 @@ def connect_pg(db_name, db_user, db_password, db_host='localhost'):
 def run_query_pg(query,connection, success='Query successful!',fail='Query failed!',commit=True,close=False):
     
     '''
-    Function for running a sql query uding psycopg2
+    Function for running a sql query using psycopg2
     Required input are query/filepath (string) to query and name of database connection
     Optional input are message to be printed when the query succeeds or fails, and whether the function should commit the changes (default is to commit)
     You must be connected to the database before using the function
@@ -102,4 +102,54 @@ q2 = 'test_sql.sql'
 
 # %%
 #Function for connecting to database using sqlalchemy
-# Function for loading data to database using sqlalchemy
+def connect_alc(db_name, db_user, db_password, db_host='localhost'):
+    '''
+    Function for connecting to database using sqlalchemy
+    Required input are database name, username, password
+    If no host is provided localhost is assumed
+    Returns the engine object
+    '''
+    import sqlalchemy
+
+    #Create engine
+    engine_info = 'postgresql://' + db_user +':'+ db_password + '@' + db_host + ':' + db_port + '/' + db_name
+
+    #Connecting to database
+    try:
+        engine = sqlalchemy.create_engine(engine_info)
+        engine.connect()
+        print('You are connected to the database %s!' % db_name)
+        return engine
+    except(Exception, sqlalchemy.exc.OperationalError) as error:
+        print('Error while connecting to the dabase!', error)
+
+# %%
+#engine_test = connect_alc(db_name, db_user, db_password)
+# %%
+#Function for loading data to database using sqlalchemy
+def to_postgis(geodataframe, table_name, engine, if_exists='replace'):
+    
+    '''
+    Function for loading a geodataframe to a postgres database using sqlalchemy
+    Required input are geodataframe, desired name of table and sqlalchemy engine
+    Default behaviour is to replace table if it already exists, but this can be changed to fail
+    '''
+    try:
+        geodataframe.to_postgis(table_name, engine, if_exists=if_exists)
+        print(table_name, 'successfully loaded to database!')
+    except(Exception) as error:
+        print('Error while uploading data to database:', error)
+
+#%%
+'''
+import geopandas as gpd 
+try:
+    #if format is shapefile only path is needed
+    study_area = gpd.read_file(fp_sa)
+except(Exception) as error:
+    #if format is geopackage use both filepath and layer name
+    study_area = gpd.read_file(fp_sa, layer=layer_name)
+
+testing_sa = to_postgis(study_area, 'sa_test', engine_test)
+'''
+# %%
