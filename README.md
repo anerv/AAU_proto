@@ -1,6 +1,6 @@
 # AAU Cykeldata
 
-This reposity contains Python and SQL scripts for creating a Postgresql-database with data from OpenStreetMap, with a focus on cycling infrastructure.
+This repository contains Python and SQL scripts for creating a Postgresql-database with data from OpenStreetMap, with a focus on cycling infrastructure.
 
 The repository has been developed by [Aalborg University, Institute for Planning](https://www.plan.aau.dk/).
 Thanks to [People for Bikes](https://peopleforbikes.org/) for initial inspiration for how to work with OSM-data.
