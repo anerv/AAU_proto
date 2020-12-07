@@ -1,4 +1,0 @@
-Ideas:
-
-Save cycling infra as separate layer/view
-Save crossings as separate layer/view - mark crossings
