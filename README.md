@@ -11,9 +11,9 @@ Using osm2pgsql is recommended, since it results in richer data (including for e
 If osmnx is used, use the files *download_osm_data.py* and *prep_classify_osmn.py*. 
 If osm2pgsql is used (see *loading_osm.sql*) the scripts *prep_osm_data_osm2pgsql.py* and *classify_osm2pgsql.py* must be used.
 
-Update info in config with the necessary info about database, name of study area etc.
+Update info in *config.py* with the necessary info about database, name of study area etc.
 
-It is assumed that a postgresql database has been created with the necessary extensions (see loading_osm.sql).
+It is assumed that a postgresql database has been created with the necessary extensions (see *loading_osm.sql*).
 A number of Python modules such as geopandas, sqlalchemy, psycopg2 must be installed before use.
 
 
