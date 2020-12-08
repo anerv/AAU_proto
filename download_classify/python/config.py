@@ -6,7 +6,7 @@ Configurations used in the analysis
 area_name = 'kbh'
 
 #Filepath to polygon defining the study area
-fp_sa = r""
+fp_sa = r'C:\Users\OA03FG\Aalborg Universitet\Urban Research group - General\AAU data\AAU grunddata\PROTOTYPE\AAU_proto\download_classify\data/cph.gpkg'
 layer_name ="Copenhagen_boundary"
 
 #Size of buffer in metres
@@ -17,7 +17,7 @@ crs = 25832
 
 # Database connection
 db_user = 'postgres'
-db_password = 
+db_password = 'AAU20'
 db_host = 'localhost'
 db_name = 'cphbike'
 db_port = '5432'
