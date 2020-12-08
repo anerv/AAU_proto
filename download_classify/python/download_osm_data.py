@@ -9,11 +9,12 @@ This scripts:
 
 #%%
 #Importing modules!
-import osmnx as ox
+#import osmnx as ox
 import geopandas as gp
 import matplotlib.pyplot as plt
-from config_download import *
+from config import *
 import sqlalchemy
+from database_functions import run_query_alc, connect_alc, to_postgis
 
 #%%
 # Provide polygon defining the study area
@@ -195,54 +196,17 @@ gdf = ox.graph_to_gdfs(graph)
 nodes = gdf[0]
 edges = gdf[1]
 # %%
-# Creating engine to connect to database
-engine_info = 'postgresql://' + db_user +':'+ db_password + '@' + db_host + ':' + db_port + '/' + database_name
-
-#Connecting to database
-try:
-    engine = sqlalchemy.create_engine(engine_info)
-    engine.connect()
-    print('You are connected to the database %s!' % database_name)
-except(Exception, sqlalchemy.exc.OperationalError) as error:
-    print('Error while connecting to the dabase!', error)
+#Connecting to db
+engine = connect_alc(db_name, db_user, db_password)
 
 #%%
 # Uploading data to database
 table_name_ways = 'osmways' + area_name
-try:
-    edges.to_postgis(table_name_ways, engine, if_exists='replace')
-    print('Way data successfully loaded to database!')
-except(Exception) as error:
-    print('Error while uploading ways data to database:', error)
-
 table_name_nodes = 'osmnodes' + area_name
-try:
-    nodes.to_postgis(table_name_nodes, engine, if_exists='replace')
-    print('Node data successfully loaded to database!')
-except(Exception) as error:
-    print('Error while uploading node data to database:', error)
-
-#%%
-# Uploading study area to database
 table_name_sa = 'study_area' + area_name
-try:
-    study_area.to_postgis(table_name_sa, engine, if_exists='replace')
-    print('Study area successfully loaded to database!')
-except(Exception) as error:
-    print('Error while uploading study area data to database:', error)
+
+ways_to_db = to_postgis(edges, table_name_ways, engine)
+nodes_to_db = to_postgis(nodes, table_name_nodes, engine)
+sa_to_db = to_postgis(study_area, table_name_sa, engine)
 
 #%%
-
-osm_ways = gp.read_file(r"C:\Users\viero\OneDrive\Documents\AAU\AAU_Geodata\OSM_DATA.gpkg", layer='OSM_ways')
-way_tags1 = list(osm_ways)
-way_tags1.sort()
-#%%
-
-# %%
-way_tags_string = "','".join(way_tags)
-way_tags_string = "'"+way_tags_string+"'"
-# %%
-print(way_tags_string)
-# %%
-west
-# %%
