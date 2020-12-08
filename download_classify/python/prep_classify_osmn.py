@@ -3,7 +3,7 @@ This script reclassifies the original OSM data for data downloaded using osmnx a
 '''
 #%%
 #Importing modules
-from config_download import *
+from config import *
 import psycopg2 as pg
 import geopandas as gpd
 from database_functions import connect_pg, run_query_pg
@@ -18,11 +18,8 @@ connection = connect_pg(db_name, db_user, db_password)
 #%%
 # Test if you can retrieve data from the database
 cursor = connection.cursor()
-sql_ways = "SELECT osmid, cycleway, highway, geometry FROM %s" % ways_table
-sql_nodes = "SELECT osmid, geometry FROM %s" % points_table
-sql_sa = "SELECT* FROM %s" %sa_table
+sql_ways = "SELECT osm_id, cycleway, highway, geometry FROM %s" % ways_table
 
-#OBS rewrite to function (entire file)
 try:
     cursor.execute(sql_ways)
     rows = cursor.fetchall()
@@ -41,62 +38,31 @@ except(Exception) as error:
 #Reprojecting data
 sql_transform1 = "ALTER TABLE %s ALTER COLUMN geometry TYPE geometry(LINESTRING,%d) USING ST_Transform(geometry,%d)" % (ways_table, crs, crs)
 
-sql_transform2 = "ALTER TABLE %s ALTER COLUMN geometry TYPE geometry(POINT,%d) USING ST_Transform(geometry,%d)" % (nodes_table, crs, crs)
+sql_transform2 = "ALTER TABLE %s ALTER COLUMN geometry TYPE geometry(POINT,%d) USING ST_Transform(geometry,%d)" % (points_table, crs, crs)
 
 sql_transform3 = "ALTER TABLE %s ALTER COLUMN geometry TYPE geometry(MULTIPOLYGON,%d) USING ST_Transform(geometry,%d)" % (sa_table, crs, crs)
 
-try:
-    cursor.execute(sql_transform1)
-    ways = gpd.read_postgis(sql_ways, connection, geom_col='geometry')
-    print('The crs for ways data is now', ways.crs)
-    cursor.execute(sql_transform2)
-    nodes = gpd.read_postgis(sql_nodes, connection, geom_col='geometry')
-    print('The crs for nodes data is now', nodes.crs)
-    cursor.execute(sql_transform3)
-    sa = gpd.read_postgis(sql_nodes, connection, geom_col='geometry')
-    print('The crs for study area data is now', sa.crs)
-except(Exception) as error:
-    print(error)
+reproject_ways = run_query_pg(sql_transform1, connection)
+reproject_points = run_query_pg(sql_transform2, connection)
+reproject_sa = run_query_pg(sql_transform3, connection)
+
 #%%
 #Clipping data to study area
 clip_ways = "DELETE FROM %s AS ways USING %s AS boundary WHERE NOT ST_DWithin(ways.geometry, boundary.geometry, %d) AND NOT ST_Intersects(ways.geometry, boundary.geometry);" % (ways_table, sa_table, buffer)
-clip_nodes = "DELETE FROM %s AS nodes USING %s AS boundary WHERE NOT ST_DWithin(nodes.geometry, boundary.geometry, %d) AND NOT ST_Intersects(nodes.geometry, boundary.geometry);" % (nodes_table, sa_table, buffer)
+clip_nodes = "DELETE FROM %s AS nodes USING %s AS boundary WHERE NOT ST_DWithin(nodes.geometry, boundary.geometry, %d) AND NOT ST_Intersects(nodes.geometry, boundary.geometry);" % (points_table, sa_table, buffer)
 
-try:
-    cursor.execute(clip_ways)
-    print('The ways dataset have been clipped!')
-    cursor.execute(clip_nodes)
-    print('The nodes dataset have been clipped!')
-except(Exception) as error:
-    print(error)
+run_clip_w = run_query_pg(clip_ways, connection)
+run_clip_n = run_query_pg(clip_nodes, connection)
 
-#%%
-#Commiting changes
-connection.commit()
 #%%
 #Check what clipped data looks like
 ways = gpd.read_postgis(sql_ways, connection, geom_col='geometry')
 ways.plot()
 #%%
 sql_file = open('classify_osm_waystable.sql','r')
-cursor = connection.cursor()
 
-try:
-    cursor.execute(sql_file.read())
-except(Exception) as error:
-    print(error)
-    print('Reconnecting to the database. Please fix error before rerunning')
-    connection.close()
-    try:
-        connection = pg.connect(database = database_name, user = db_user,
-                                    password = db_password,
-                                    host = db_host)
+classify_ways = run_query_pg(sql_file, connection, close=True)
 
-        print('You are connected to the database %s!' % database_name)
-
-    except (Exception, pg.Error) as error :
-        print ("Error while connecting to PostgreSQL", error)
-    
 #%%
 #Commiting changes and closing db connection
 connection.commit()
