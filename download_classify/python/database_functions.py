@@ -55,12 +55,12 @@ def run_query_pg(query,connection, success='Query successful!',fail='Query faile
             cursor.execute(query)
         
         print(success)
+
         try:
             result = cursor.fetchall()
             rows_changed = len(result)
             print(rows_changed,'rows were updated or retrieved')
             return result
-
         except:
             pass
 
@@ -77,8 +77,9 @@ def run_query_pg(query,connection, success='Query successful!',fail='Query faile
     except(Exception) as error:
         print(fail)
         print(error)
-        print('Reconnecting to the database. Please fix error before rerunning')
+        print('Please fix error before rerunning and reconnect to the database')
         connection.close()
+        '''
         try:
             connection = pg.connect(database = db_name, user = db_user,
                                         password = db_password,
@@ -88,11 +89,12 @@ def run_query_pg(query,connection, success='Query successful!',fail='Query faile
 
         except (Exception, pg.Error) as error :
             print("Error while connecting to PostgreSQL", error)
+        '''
 
     
 #%%
 #Testing
-q1 = "SELECT * FROM wayskbh WHERE route_name ILIKE '%c%'"
+q1 = "SELECT * FROM waysdk WHERE route_name ILIKE '%c%'"
 q2 = 'test_sql.sql'
 
 # %%
