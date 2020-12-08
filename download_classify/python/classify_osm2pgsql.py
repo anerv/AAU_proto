@@ -6,7 +6,7 @@ Unused columns and rows are deleted (but can still be found in the table created
 #%%
 #Importing modules
 import psycopg2 as pg
-from config_download import *
+from config import *
 from database_functions import connect_pg, run_query_pg
 import geopandas as gpd
 # %%
@@ -14,12 +14,15 @@ import geopandas as gpd
 connection = connect_pg(db_name, db_user, db_password)
 
 #%%
-
 #Delecting unneccessary rows
 clear_rows_ways = "DELETE FROM %s WHERE highway IS NULL OR highway IN ('raceway', 'platform')" % ways_table
 clear_rows_rel = "DELETE FROM %s WHERE route NOT IN ('fitness_trail' , 'foot' , 'hiking' , 'bicycle', 'road' ) OR route IS NULL" % rel_table
 
+run_clear_w = run_query_pg(clear_rows_ways, connection)
+run_clear_rel = run_query_pg(clear_rows_rel, connection)
 
+'''
+#OBS
 cursor = connection.cursor()
 try:
     cursor.execute(clear_rows_ways)
@@ -30,10 +33,9 @@ except(Exception, pg.Error) as error:
     print(error)
 
 connection.commit()
+'''
 #%%
 #Deleting unneccessary columns
-
-#OBS rewrite to function!
 
 #Columns to be dropped from ways table
 ways_col = ['admin_level', 'amenity', 'area', 'boundary', 'harbour', 'horse', 'landuse', '"lanes:backward"', '"lanes:forward"', 'leisure', 'noexit', 'operator', 'railway', 'shop', 'traffic_sign', '"turn:lanes"', '"turn:backward"', '"turn:forward"', 'water', 'waterway', 'wetland', 'wood']
@@ -60,7 +62,11 @@ points_del = '", DROP COLUMN "'.join(points_cols_del)
 points_del = 'ALTER TABLE %s ' % points_table + 'DROP COLUMN "' + points_del + '";'
 
 #%%
-
+run_del_w = run_query_pg(ways_del, connection)
+run_del_p = run_query_pg(points_del, connection)
+run_del_r = run_query_pg(rel_del, connection)
+'''
+#OBS rewrite to function!
 cursor = connection.cursor()
 try:
     #cursor.execute(ways_del)
@@ -72,12 +78,17 @@ try:
 except(Exception, pg.Error) as error:
     print(error)
 
-#%%
 connection.commit()
+'''
+
 #%%
 
 #Classifying ways table
 ways_classi = open('classify_osm_waystable.sql','r')
+
+run_class_w = run_query_pg(ways_classi, connection)
+
+'''
 cursor = connection.cursor()
 
 #OBS rewrite as function!
@@ -99,10 +110,14 @@ except(Exception) as error:
         print ("Error while connecting to PostgreSQL", error)
 
 connection.commit()
+'''
 #%%
-
 #Classyfing points table
 points_classi = open('classify_osm_points.sql','r')
+
+run_class_p = run_query_pg(points_classi, connection)
+
+'''
 cursor = connection.cursor()
 
 #OBS! Rewrite to function!
@@ -124,10 +139,14 @@ except(Exception) as error:
         print ("Error while connecting to PostgreSQL", error)
 
 connection.commit()
-
+'''
 #%%
 #Joining data about cycle routes to ways data
 ways_relations = open('join_relations_to_ways.sql','r')
+
+run_ways_rel = run_query_pg(ways_relations, connection)
+
+'''
 cursor = connection.cursor()
 
 #OBS rewrite as function!
@@ -149,7 +168,7 @@ except(Exception) as error:
         print ("Error while connecting to PostgreSQL", error)
 
 connection.commit()
-
+'''
 #%%
 # Testing the results
 
