@@ -3,7 +3,8 @@
 #Importing modules
 from config import *
 from database_functions import run_query_pg, connect_pg, connect_alc, to_postgis
-import geopandas as gpd 
+import geopandas as gpd
+from pathlib import Path
 #%%
 #Connecting to database
 connection = connect_pg(db_name, db_user, db_password)
@@ -29,7 +30,12 @@ ways_gdf2 = ways_gdf.rename(columns=ways_dict, inplace = False)
 
 # %%
 #Saving tables to shapefile
-ways_gdf2.to_file("%s.shp" % ways_table)
+two_levels_up = str(Path(__file__).parents[1])
+fp_ways = two_levels_up + '\\data\\' + ways_table + '.shp'
+fp_points_i = two_levels_up + '\\data\\' + 'points_infra.shp'
+fp_points_s = two_levels_up + '\\data\\' + 'points_service.shp'
 #%%
-points_s_gdf.to_file('points_service.shp')
-points_i_gdf.to_file('points_infra.shp')
+ways_gdf2.to_file(fp_ways)
+#%%
+points_i_gdf.to_file(fp_points_i)
+points_s_gdf.to_file(fp_points_s)
