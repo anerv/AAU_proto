@@ -9,6 +9,7 @@ from config import *
 from database_functions import connect_pg, run_query_pg, connect_alc, to_postgis
 import sqlalchemy
 import geopandas as gpd
+from pathlib import Path
 #%%
 #Load data to database
 #Connecting to database
@@ -25,10 +26,11 @@ traffic = gpd.read_file(traffic_fp)
 
 #%%
 #Loading data to database
+
 #Name of tables
 table_light = 'street_light'
 table_traffic = 'traffic_counts'
-#%%
+
 light_to_db = to_postgis(lights, table_light, engine, if_exists='fail')
 traffic_to_db = to_postgis(traffic, table_traffic, engine, if_exists='fail')
 
@@ -40,6 +42,9 @@ connection = connect_pg(db_name, db_user, db_password, db_host)
 get_crs_light = "SELECT find_SRID('public', '%s', 'geometry');" % table_light
 check_crs_light = run_query_pg(get_crs_light, connection)
 
+if check_crs_light[0][0] == 0:
+    print('Dataset has no or an unknown SRID. Please define the projection')
+
 if check_crs_light[0][0] != crs:
 
     #Reproject
@@ -49,6 +54,10 @@ if check_crs_light[0][0] != crs:
 #%%
 get_crs_traffic = "SELECT find_SRID('public', '%s', 'geometry');" % table_traffic
 check_crs_traffic = run_query_pg(get_crs_traffic, connection)
+
+if check_crs_traffic[0][0] == 0:
+    print('Dataset has no or an unknown SRID. Please define the projection')
+
 
 if check_crs_traffic[0][0] != crs:
     reproj_traffic = "ALTER TABLE %s ALTER COLUMN geometry TYPE geometry(POINT,%d) USING ST_Transform(geometry,%d)" % (table_traffic, crs, crs)
@@ -61,9 +70,16 @@ index_light = run_query_pg(create_index_light,connection)
 index_traffic = run_query_pg('CREATE INDEX counts_geom_idx ON traffic_counts USING GIST (geometry);',connection)
 
 #%%
-#Join traffic lights to nearest way
-join_lights = run_query_pg('nearest_line_from_light.sql',connection)
 
-#Join traffic counts to nearest way
-join_traffic = run_query_pg('nearest_line_from_traffic_count.sql',connection)
+#Join traffic lights and traffic counts to nearest way
+
+two_levels_up = str(Path(__file__).parents[1])
+fp_l = two_levels_up + '\\sql\\nearest_line_from_light.sql'
+fp_t = two_levels_up + '\\sql\\nearest_line_from_traffic_count.sql'
+#%%
+join_lights = run_query_pg(fp_l, connection)
+#%%
+join_traffic = run_query_pg(fp_t,connection)
+# %%
+connection.close()
 # %%
