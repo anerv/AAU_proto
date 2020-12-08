@@ -84,7 +84,7 @@ connection.commit()
 #%%
 
 #Classifying ways table
-ways_classi = open('classify_osm_waystable.sql','r')
+ways_classi = open('sql/classify_osm_waystable.sql','r')
 
 run_class_w = run_query_pg(ways_classi, connection)
 
@@ -113,7 +113,7 @@ connection.commit()
 '''
 #%%
 #Classyfing points table
-points_classi = open('classify_osm_points.sql','r')
+points_classi = open('sql/classify_osm_points.sql','r')
 
 run_class_p = run_query_pg(points_classi, connection)
 
@@ -142,7 +142,7 @@ connection.commit()
 '''
 #%%
 #Joining data about cycle routes to ways data
-ways_relations = open('join_relations_to_ways.sql','r')
+ways_relations = open('sql/join_relations_to_ways.sql','r')
 
 run_ways_rel = run_query_pg(ways_relations, connection)
 

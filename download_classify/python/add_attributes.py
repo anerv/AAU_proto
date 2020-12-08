@@ -5,22 +5,14 @@ The data added here are information about street lights and traffic counts but c
 #%%
 #Importing modules
 import psycopg2 as pg
-from config_download import *
-from database_functions import connect_pg, run_query_pg
+from config import *
+from database_functions import connect_pg, run_query_pg, connect_alc, to_postgis
 import sqlalchemy
 import geopandas as gpd
 #%%
 #Load data to database
-# Creating engine to connect to database
-engine_info = 'postgresql://' + db_user +':'+ db_password + '@' + db_host + ':' + db_port + '/' + db_name
-
 #Connecting to database
-try:
-    engine = sqlalchemy.create_engine(engine_info)
-    engine.connect()
-    print('You are connected to the database %s!' % db_name)
-except(Exception, sqlalchemy.exc.OperationalError) as error:
-    print('Error while connecting to the dabase!', error)
+engine = connect_alc(db_name, db_user, db_password)
 
 #%%
 #File paths to data
@@ -37,18 +29,8 @@ traffic = gpd.read_file(traffic_fp)
 table_light = 'street_light'
 table_traffic = 'traffic_counts'
 #%%
-
-try:
-    lights.to_postgis(table_light, engine, if_exists='replace')
-    print(table_light, 'successfully loaded to database!')
-except(Exception) as error:
-    print('Error while uploading data to database:', error)
-
-try:
-    traffic.to_postgis(table_traffic, engine, if_exists='replace')
-    print(table_traffic, 'successfully loaded to database!')
-except(Exception) as error:
-    print('Error while uploading data to database:', error)
+light_to_db = to_postgis(lights, table_light, engine, if_exists='fail')
+traffic_to_db = to_postgis(traffic, table_traffic, engine, if_exists='fail')
 
 #%%
 #Connecting to database using psycopg2
