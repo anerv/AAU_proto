@@ -1,5 +1,5 @@
 #%%
-from config_download import *
+from config import *
 
 #%%
 #Function for connecting to database using psycopg2
@@ -152,4 +152,19 @@ except(Exception) as error:
 
 testing_sa = to_postgis(study_area, 'sa_test', engine_test)
 '''
+# %%
+# Function for running query using sqlalchemy
+def run_query_alc(query, engine,success='Query successful!',fail='Query failed!'):
+    with engine.connect() as connection:
+        try:
+            result = connection.execute(query)
+            print(success)
+            return result
+        except(Exception) as error:
+            print(fail)
+            print(error)
+#%%
+#Testing
+#q1 = "SELECT * FROM wayskbh WHERE route_name ILIKE '%%Amager%%'"
+#test = run_query_alc(q1,engine_test)
 # %%
