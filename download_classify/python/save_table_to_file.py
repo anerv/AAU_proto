@@ -1,7 +1,7 @@
 #Save tables to file
 #%%
 #Importing modules
-from config_download import *
+from config import *
 from database_functions import run_query_pg, connect_pg, connect_alc, to_postgis
 import geopandas as gpd 
 #%%
