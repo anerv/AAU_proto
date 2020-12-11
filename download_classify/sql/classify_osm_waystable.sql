@@ -218,7 +218,7 @@ WHERE cycling_allowed = 'yes';
 
 -- Paths with cycling
 UPDATE waysdk SET cycling_infrastructure = 'sti_cykling_tilladt' 
-WHERE highway = 'path' AND cycling_infrastructure = 'yes';
+WHERE highway = 'path' AND (cycling_infrastructure = 'yes' OR bicycle = 'yes);
 
 -- Categorising path types
 UPDATE waysdk SET path_segregation =
