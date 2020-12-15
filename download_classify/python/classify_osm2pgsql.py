@@ -85,6 +85,16 @@ fp_r = two_levels_up + '\sql/join_relations_to_ways.sql'
 run_ways_rel = run_query_pg(fp_r, connection)
 
 #%%
+#Saving bicycle parking and bicycle rental to separate table
+bicycle_service = "CREATE TABLE bicycle_service AS (SELECT osm_id, amenity, geometry FROM %s WHERE amenity IN ('bicycle_parking','bicycle_rental'))" % lu_table
+run_bi_s = run_query_pg(bicycle_service, connection)
+
+#%%
+#Creating spatial index
+index_bi_s = "CREATE INDEX b_s_geom_idx ON bicycle_service USING GIST (geometry);"
+create_index = run_query_pg(index_bi_s, connection)
+
+#%%
 # Testing the results
 
 #Add here

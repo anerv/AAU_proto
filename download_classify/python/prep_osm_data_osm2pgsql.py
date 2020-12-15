@@ -39,7 +39,7 @@ copy_points = "CREATE TABLE %s AS TABLE planet_osm_point;" % points_table
 #Create table with relations data
 copy_rel = "CREATE TABLE %s AS SELECT * FROM planet_osm_line WHERE osm_id < 0;" % rel_table
 #Create table with land use data
-copy_lu = "CREATE TABLE %s AS (SELECT osm_id, amenity, landuse, leisure, way FROM planet_osm_polygon WHERE amenity IS NOT NULL OR landuse IS NOT NULL OR leisure IS NOT NULL);" % lu_table
+copy_lu = "CREATE TABLE %s AS (SELECT osm_id, amenity, landuse, leisure, water, natural, way FROM planet_osm_polygon WHERE amenity IS NOT NULL OR landuse IS NOT NULL OR leisure IS NOT NULL);" % lu_table
 
 create_ways = run_query_alc(copy_ways, engine, success='Copy of table made for osm ways')
 create_points = run_query_alc(copy_points, engine, success='Copy of table made for osm points')
