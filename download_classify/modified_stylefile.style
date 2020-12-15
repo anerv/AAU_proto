@@ -123,7 +123,7 @@ way        moped        text         linear
 node,way   motorcar     text         linear
 node,way   motor_vehicle     text    linear
 node,way   name         text         linear
-#node,way   natural      text         polygon  # natural=coastline tags are discarded by a hard coded rule in osm2pgsql
+node,way   natural      text         polygon  # natural=coastline tags are discarded by a hard coded rule in osm2pgsql
 node,way   noexit       text         linear
 node,way   oneway       text         linear
 node,way   oneway:bicycle    text    linear
