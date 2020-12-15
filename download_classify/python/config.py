@@ -27,4 +27,5 @@ ways_table = "ways" + area_name
 points_table = "points" + area_name
 rel_table = "rel" + area_name
 sa_table = "study_area" + area_name
-
+poly_table = "poly" + area_name
+lu_table = "land_use" + area_name
