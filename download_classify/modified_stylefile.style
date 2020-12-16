@@ -117,6 +117,7 @@ way        lanes:forward     text    linear
 node,way   layer        text         linear
 node,way   leisure      text         polygon
 node,way   lit          text         linear
+node,way   manmade      text         linear
 way        maxspeed     text         linear
 way        maxspeed:advisory  text   linear
 way        moped        text         linear
