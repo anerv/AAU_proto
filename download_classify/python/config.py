@@ -7,7 +7,14 @@ area_name = 'dk'
 
 #Filepath to polygon defining the study area
 fp_sa = r'C:\Users\OA03FG\OneDrive - Aalborg Universitet\AAU DATA\AAU GeoDATA\denmark.gpkg'
-layer_name ="boundary"
+sa_layer_name ="boundary"
+
+#Filepath to Corine land cover data
+fp_lc = r'C:/Users/OA03FG/OneDrive - Aalborg Universitet/AAU DATA/AAU GeoDATA/DK_CORINE_SHP_UTM32-WGS84/CLC06_DK.shp'
+lc_layer_name = 'corine'
+
+#Filepath to attribute data for Corine land cover
+fp_att = r'C:/Users/OA03FG/Aalborg Universitet/Urban Research group - General/AAU data/AAU grunddata/PROTOTYPE/clc_legend_modified.csv'
 
 #Size of buffer in metres
 buffer = 3000

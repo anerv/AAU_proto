@@ -40,7 +40,6 @@ rel_cols_del = [i for i in rel_org_cols if i not in rel_useful_cols]
 rel_del = '", DROP COLUMN "'.join(rel_cols_del)
 rel_del = 'ALTER TABLE %s ' % rel_table + 'DROP COLUMN "' + rel_del + '";'
 
-
 #Columns to be dropped from points table
 points_useful_cols = ['osm_id','amenity','area','barrier','bicycle','bollard','crossing','crossing:island','crossing:ref','ele','flashing_lights','foot','highway','layer','lit','parking','public_transport','railway','ref','segregated','service:bicycle:chain_tool','service:bicycle:pump','service','shop','surface','traffic_calming','traffic_sign','traffic_signals','geometry']
 points_query = "SELECT * FROM %s" % points_table
@@ -71,7 +70,7 @@ run_class_w = run_query_pg(fp_w, connection)
 
 #Filepath to sql file
 two_levels_up = str(Path(__file__).parents[1])
-fp_p = two_levels_up + '\sql/classify_osm_points.sql'
+fp_p = two_levels_up + r'\sql/classify_osm_points.sql'
 
 run_class_p = run_query_pg(fp_p, connection)
 
@@ -80,7 +79,7 @@ run_class_p = run_query_pg(fp_p, connection)
 
 #Filepath to sql file
 two_levels_up = str(Path(__file__).parents[1])
-fp_r = two_levels_up + '\sql/join_relations_to_ways.sql'
+fp_r = two_levels_up + r'\sql/join_relations_to_ways.sql'
 
 run_ways_rel = run_query_pg(fp_r, connection)
 
@@ -90,7 +89,7 @@ bicycle_service = "CREATE TABLE bicycle_service AS (SELECT osm_id, amenity, geom
 run_bi_s = run_query_pg(bicycle_service, connection)
 
 #%%
-#Creating spatial index
+#Creating spatial index for table with cycle services
 index_bi_s = "CREATE INDEX b_s_geom_idx ON bicycle_service USING GIST (geometry);"
 create_index = run_query_pg(index_bi_s, connection)
 

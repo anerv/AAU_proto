@@ -15,7 +15,7 @@ try:
     study_area = gpd.read_file(fp_sa)
 except(Exception) as error:
     #if format is geopackage use both filepath and layer name
-    study_area = gpd.read_file(fp_sa, layer=layer_name)
+    study_area = gpd.read_file(fp_sa, layer=sa_layer_name)
 
 #study_area.plot()
 
@@ -30,7 +30,7 @@ upload_sa = to_postgis(study_area, table_name_sa, engine)
 
 #%%
 #Checking table names
-print('Table names are:', ways_table, points_table, rel_table, sa_table)
+print('Table names are:', ways_table, points_table, rel_table, sa_table, lu_table)
 
 #%%
 # Creating new tables
@@ -39,7 +39,7 @@ copy_points = "CREATE TABLE %s AS TABLE planet_osm_point;" % points_table
 #Create table with relations data
 copy_rel = "CREATE TABLE %s AS SELECT * FROM planet_osm_line WHERE osm_id < 0;" % rel_table
 #Create table with land use data
-copy_lu = "CREATE TABLE %s AS (SELECT osm_id, amenity, landuse, leisure, water, natural, way FROM planet_osm_polygon WHERE amenity IS NOT NULL OR landuse IS NOT NULL OR leisure IS NOT NULL);" % lu_table
+copy_lu = 'CREATE TABLE %s AS (SELECT osm_id, amenity, landuse, leisure, water, "natural", man_made, way FROM planet_osm_polygon WHERE amenity IS NOT NULL OR landuse IS NOT NULL OR leisure IS NOT NULL OR "natural" IS NOT NULL OR water IS NOT NULL);' % lu_table
 
 create_ways = run_query_alc(copy_ways, engine, success='Copy of table made for osm ways')
 create_points = run_query_alc(copy_points, engine, success='Copy of table made for osm points')
