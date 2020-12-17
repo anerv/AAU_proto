@@ -47,17 +47,29 @@ else:
     print("Data for land_cover reprojected")
 
 #%%
+#Change table names to lowercase
+land_cover.columns = land_cover.columns.str.lower()
+
+#%%
 # Load to db
 to_postgis(land_cover, 'land_cover', engine)
 
-#%%
 # Add spatial index
 index_lc = "CREATE INDEX lc_geom_idx ON land_cover USING GIST (geometry);"
-
 create_index = run_query_alc(index_lc, engine)
 #%%
-# Simplify - dissolving adjacent polygons with identical attributes
+# Simplify - dissolving adjacent polygons with identical attribute
+simplify = "CREATE TABLE land_cover_simple AS SELECT (ST_DUMP(ST_UNION(geometry))).geom, label_modified FROM land_cover GROUP BY label_modified;"
+run_simplify = run_query_alc(simplify, engine)
+#%%
+#Creating table with coastlines
+cl = 'CREATE TABLE coastline AS (SELECT * FROM land_usedk WHERE "natural" = "coastline");'
+run_cl = run_query_alc(cl, engine)
+
+# Create spatial index for coastlines
+index_cl = "CREATE INDEX cl_geom_idx ON coastline USING GIST (geometry);"
+run_index = run_query_alc(index_cl, engine)
 # %%
-postgis_cookbook=# CREATE TABLE chp03.states_from_counties ASSELECT ST_Multi(ST_Union(the_geom)) as the_geom, state_fips FROM chp03.countiesGROUP BY state_fips;
-
-
+# Update attribute for ways based on land cover
+#filepath
+#run file

@@ -3,7 +3,6 @@ This script creates a spatail join between cycling routes and roads/bike lanes
 Update table names as needed
 */
 
-
 CREATE MATERIALIZED VIEW buffer AS 
     (SELECT r.name, r.operator, r.ref, r.route, ST_Buffer(geometry, 1, 'endcap=round join=round') AS geometry
     FROM reldk r);
@@ -12,13 +11,16 @@ CREATE INDEX buffer_geom_idx
   ON buffer
   USING GIST (geometry);
 
+/*
 SELECT w.osm_id, w.road_type, w.cycling_infrastructure, w.geometry, 
     b.name, b.operator, b.ref, b.route, b.geometry FROM waysdk w JOIN buffer b ON
 	ST_ContainsProperly(b.geometry,w.geometry)
-	WHERE b.route = 'bicycle' ORDER BY osm_id;
+	WHERE b.route = 'bicycle' ORDER BY osm_id; */
 
--- Use STRUCT??
-CREATE VIEW ways_rel AS (SELECT w.osm_id, ARRAY_AGG(b.name ORDER BY b.name) AS name, ARRAY_AGG(b.operator ORDER BY b.name) AS operator, ARRAY_AGG(b.ref ORDER BY b.name) AS ref 
+-- Use STRUCT instead?
+CREATE VIEW ways_rel AS (SELECT w.osm_id, ARRAY_AGG(b.name ORDER BY b.name) AS name, 
+	ARRAY_AGG(b.operator ORDER BY b.name) AS operator, 
+	ARRAY_AGG(b.ref ORDER BY b.name) AS ref 
 	FROM waysdk w JOIN buffer b ON
 	ST_ContainsProperly(b.geometry,w.geometry)
 	WHERE b.route = 'bicycle' GROUP BY osm_id);
