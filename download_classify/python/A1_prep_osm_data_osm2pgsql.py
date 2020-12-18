@@ -26,7 +26,7 @@ engine = connect_alc(db_name, db_user, db_password)
 #%%
 #Loading study area to database
 table_name_sa = 'study_area' + area_name
-upload_sa = to_postgis(study_area, table_name_sa, engine)
+to_postgis(study_area, table_name_sa, engine)
 
 #%%
 #Checking table names

@@ -73,3 +73,7 @@ run_index = run_query_alc(index_cl, engine)
 # Update attribute for ways based on land cover
 #filepath
 #run file
+fp = r'C:\Users\OA03FG\OneDrive - Aalborg Universitet\AAU DATA\AAU GeoDATA'
+sa_test = gpd.read_file(fp)
+to_postgis(sa_test, 'sa_test',engine)
+# %%
