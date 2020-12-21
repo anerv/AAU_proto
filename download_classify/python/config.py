@@ -3,11 +3,11 @@ Configurations used in the analysis
 '''
 
 #Name of study area
-area_name = 'dk'
+area_name = 'rh'
 
 #Filepath to polygon defining the study area
-fp_sa = r'C:\Users\OA03FG\OneDrive - Aalborg Universitet\AAU DATA\AAU GeoDATA\denmark.gpkg'
-sa_layer_name ="boundary"
+fp_sa = r'C:\Users\OA03FG\Aalborg Universitet\Urban Research group - General\AAU data\AAU grunddata\PROTOTYPE\region_hovedstaden.gpkg'
+sa_layer_name ="region_hovedstaden"
 
 #Filepath to Corine land cover data
 fp_lc = r'C:/Users/OA03FG/OneDrive - Aalborg Universitet/AAU DATA/AAU GeoDATA/DK_CORINE_SHP_UTM32-WGS84/CLC06_DK.shp'
