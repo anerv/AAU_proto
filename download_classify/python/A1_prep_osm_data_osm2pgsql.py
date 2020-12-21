@@ -41,10 +41,10 @@ copy_rel = "CREATE TABLE %s AS SELECT * FROM planet_osm_line WHERE osm_id < 0;" 
 #Create table with land use data
 copy_lu = 'CREATE TABLE %s AS (SELECT osm_id, amenity, landuse, leisure, water, "natural", man_made, way FROM planet_osm_polygon WHERE amenity IS NOT NULL OR landuse IS NOT NULL OR leisure IS NOT NULL OR "natural" IS NOT NULL OR water IS NOT NULL);' % lu_table
 
-create_ways = run_query_alc(copy_ways, engine, success='Copy of table made for osm ways')
-create_points = run_query_alc(copy_points, engine, success='Copy of table made for osm points')
-create_relations = run_query_alc(copy_rel, engine, success='Copy of table made for osm relations')
-create_lu = run_query_alc(copy_lu, engine, success='Copy of table made for osm relations')
+create_ways = run_query_alc(copy_ways, engine, success='Copy of table made for ways')
+create_points = run_query_alc(copy_points, engine, success='Copy of table made for points')
+create_relations = run_query_alc(copy_rel, engine, success='Copy of table made for relations')
+create_lu = run_query_alc(copy_lu, engine, success='Copy of table made for land use')
 #%%
 #Renaming geomtry columns
 #Using osm2pgsql the geometry col is initially called 'way'
@@ -112,13 +112,39 @@ create_index_lu = run_query_alc(index_lu, engine)
 #%%
 #Option to clip data to study area
 #Uncomment if data should be clipped to the extent of the study area + buffer
+
 '''
 clip_ways = "DELETE FROM %s AS ways USING %s AS boundary WHERE NOT ST_DWithin(ways.geometry, boundary.geometry, %d) AND NOT ST_Intersects(ways.geometry, boundary.geometry);" % (ways_table, sa_table, buffer)
 clip_points = "DELETE FROM %s AS points USING %s AS boundary WHERE NOT ST_DWithin(points.geometry, boundary.geometry, %d) AND NOT ST_Intersects(points.geometry, boundary.geometry);" % (points_table, sa_table, buffer)
 clip_rels =  "DELETE FROM %s AS rel USING %s AS boundary WHERE NOT ST_DWithin(rel.geometry, boundary.geometry, %d) AND NOT ST_Intersects(rel.geometry, boundary.geometry);" % (points_table, sa_table, buffer)
 
-run_clip_w = run_query_alc(clip_ways, engine)
+run_clip_w = run_query_alc(clip_ways2, engine)
 run_clip_p = run_query_alc(clip_points, engine)
 run_clip_r = run_query_alc(clip_rels, engine)
 '''
+
+# %%
+#The clipping method above can be very slow if the osm file covers a large area
+#Alternatively use a GIS and load clipped data to database
+
+#Filepaths to clipped files
+ways_fp = r'C:\Users\OA03FG\Aalborg Universitet\Urban Research group - General\AAU data\AAU grunddata\PROTOTYPE\ways_clipped.gpkg'
+rel_fp = r'C:\Users\OA03FG\Aalborg Universitet\Urban Research group - General\AAU data\AAU grunddata\PROTOTYPE\rel_clipped.gpkg'
+points_fp =  r'C:\Users\OA03FG\Aalborg Universitet\Urban Research group - General\AAU data\AAU grunddata\PROTOTYPE\points_clipped.gpkg'
+lu_fp = r'C:\Users\OA03FG\Aalborg Universitet\Urban Research group - General\AAU data\AAU grunddata\PROTOTYPE\lu_clipped.gpkg'
+
 #%%
+#Load clipped data to geodataframes
+ways_clipped = gpd.read_file(ways_fp, layer='ways_clipped')
+#%%
+rel_clipped = gpd.read_file(rel_fp, layer='rel_clipped')
+points_clipped = gpd.read_file(points_fp, layer='points_clipped')
+lu_clipped = gpd.read_file(lu_fp, layer='lu_clipped')
+
+# %%
+#Load data to db
+to_postgis(ways_clipped,'ways_clipped',engine)
+to_postgis(rel_clipped,'rel_clipped',engine)
+to_postgis(points_clipped,'points_clipped',engine)
+to_postgis(lu_clipped,'lu_clipped',engine)
+# %%

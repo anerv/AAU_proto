@@ -1,13 +1,13 @@
 /*
 This script updates the attribute for ways data based on the land cover
 */
-ALTER TABLE waysdk 
+ALTER TABLE ways_rh 
 ADD COLUMN landscape VARCHAR, 
 ADD COLUMN close_to VARCHAR;
 
 CREATE MATERIALIZED VIEW ways_lc AS 
 	SELECT w.osm_id, string_agg(l.label_modified, ', ') AS landcover FROM waysdk w 
-    JOIN land_cover l ON ST_Intersects(w.geometry, l.geometry) GROUP BY osm_id;
+    JOIN land_cover_simple l ON ST_Intersects(w.geometry, l.geom) GROUP BY osm_id;
 
 CREATE INDEX osmid ON ways_lc (osm_id);
 

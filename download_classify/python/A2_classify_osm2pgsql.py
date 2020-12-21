@@ -62,9 +62,7 @@ run_del_r = run_query_pg(rel_del, connection)
 two_levels_up = str(Path(__file__).parents[1])
 fp_w = two_levels_up + '\sql/classify_osm_waystable.sql'
 
-#%%
 run_class_w = run_query_pg(fp_w, connection)
-
 #%%
 #Classyfing points table
 

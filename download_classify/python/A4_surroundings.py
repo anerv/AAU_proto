@@ -32,12 +32,12 @@ att = pd.read_csv(fp_att, sep=';')
 att.dropna(how='all')
 
 # Rename column to join columns have the same name, convert float to integer
-att['CODE_06'] = att['CLC_CODE'].astype(int)
+att['CODE_12'] = att['CLC_CODE'].astype(int)
 #%%
-land_cover['CODE_06'] = land_cover['CODE_06'].astype(int)
+land_cover['CODE_12'] = land_cover['CODE_12'].astype(int)
 #%%
 # Join attribute data and spatial data
-land_cover = land_cover.merge(att, on='CODE_06')
+land_cover = land_cover.merge(att, on='CODE_12')
 #%%
 # Check that crs is correct
 if land_cover.crs == crs:
@@ -61,10 +61,25 @@ create_index = run_query_alc(index_lc, engine)
 # Simplify - dissolving adjacent polygons with identical attribute
 simplify = "CREATE TABLE land_cover_simple AS SELECT (ST_DUMP(ST_UNION(geometry))).geom, label_modified FROM land_cover GROUP BY label_modified;"
 run_simplify = run_query_alc(simplify, engine)
+
+# Add spatial index
+index_lc = "CREATE INDEX lcs_geom_idx ON land_cover_simple USING GIST (geom);"
+create_index = run_query_alc(index_lc, engine)
 #%%
+#Clip land cover to study area
+clip_lc =  "DELETE FROM land_cover AS lc USING %s AS boundary WHERE  NOT ST_Intersects(lc.geometry, boundary.geometry);" % sa_table
+clip_lc_s = "DELETE FROM land_cover_simple AS lc USING %s AS boundary WHERE  NOT ST_Intersects(rel.geometry, boundary.geometry);" % sa_table
+
+run_clip_lc = run_query_alc(clip_lc, engine)
+#run_clip_lc_s = run_query_alc(clip_lc_s, engine)
+#%%
+
 #Creating table with coastlines
-cl = 'CREATE TABLE coastline AS (SELECT * FROM land_usedk WHERE "natural" = "coastline");'
+cl = '''CREATE TABLE coastline AS (SELECT * FROM planet_osm_line WHERE "natural" = 'coastline');'''
 run_cl = run_query_alc(cl, engine)
+#%%
+#Rename geometry column
+rename_c = run_query_alc("ALTER TABLE coastline RENAME COLUMN way TO geometry", engine)
 
 # Create spatial index for coastlines
 index_cl = "CREATE INDEX cl_geom_idx ON coastline USING GIST (geometry);"

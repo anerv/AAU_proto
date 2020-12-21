@@ -3,14 +3,14 @@ Configurations used in the analysis
 '''
 
 #Name of study area
-area_name = 'rh'
+area_name = '_rh'
 
 #Filepath to polygon defining the study area
 fp_sa = r'C:\Users\OA03FG\Aalborg Universitet\Urban Research group - General\AAU data\AAU grunddata\PROTOTYPE\region_hovedstaden.gpkg'
 sa_layer_name ="region_hovedstaden"
 
 #Filepath to Corine land cover data
-fp_lc = r'C:/Users/OA03FG/OneDrive - Aalborg Universitet/AAU DATA/AAU GeoDATA/DK_CORINE_SHP_UTM32-WGS84/CLC06_DK.shp'
+fp_lc = r'C:/Users/OA03FG/OneDrive - Aalborg Universitet/AAU DATA/AAU GeoDATA/DK_CORINE_SHP_UTM32-WGS84/CLC12_DK.shp'
 lc_layer_name = 'corine'
 
 #Filepath to attribute data for Corine land cover
@@ -26,7 +26,7 @@ crs = 25832
 db_user = 'postgres'
 db_password = 'AAU20'
 db_host = 'localhost'
-db_name = 'dk'
+db_name = 'rh'
 db_port = '5432'
 
 #Setting table names

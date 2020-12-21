@@ -20,7 +20,7 @@ light_fp = r'C:\Users\OA03FG\OneDrive - Aalborg Universitet\AAU DATA\AAU GeoDATA
 traffic_fp = r'C:\Users\OA03FG\OneDrive - Aalborg Universitet\AAU DATA\AAU GeoDATA\mastra_trafiktaelling.shp'
 
 #Read data
-lights = gpd.read_file(light_fp)
+#lights = gpd.read_file(light_fp)
 traffic = gpd.read_file(traffic_fp)
 
 #%%
@@ -30,7 +30,7 @@ traffic = gpd.read_file(traffic_fp)
 table_light = 'street_light'
 table_traffic = 'traffic_counts'
 
-to_postgis(lights, table_light, engine, if_exists='fail')
+#to_postgis(lights, table_light, engine, if_exists='fail')
 to_postgis(traffic, table_traffic, engine, if_exists='fail')
 
 #%%
@@ -67,7 +67,7 @@ else:
 #%%
 #Create spatial index
 create_index_light = 'CREATE INDEX light_geom_idx ON street_light USING GIST (geometry);'
-index_light = run_query_pg(create_index_light,connection)
+#index_light = run_query_pg(create_index_light,connection)
 index_traffic = run_query_pg('CREATE INDEX counts_geom_idx ON traffic_counts USING GIST (geometry);',connection)
 
 #%%
@@ -78,8 +78,7 @@ two_levels_up = str(Path(__file__).parents[1])
 fp_l = two_levels_up + '\\sql\\nearest_line_from_light.sql'
 fp_t = two_levels_up + '\\sql\\nearest_line_from_traffic_count.sql'
 
-join_lights = run_query_pg(fp_l, connection)
-join_traffic = run_query_pg(fp_t,connection)
-# %%
-connection.close()
+#join_lights = run_query_pg(fp_l, connection)
+join_traffic = run_query_pg(fp_t,connection, close=True)
+
 # %%

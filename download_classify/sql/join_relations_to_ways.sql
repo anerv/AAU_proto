@@ -5,7 +5,7 @@ Update table names as needed
 
 CREATE MATERIALIZED VIEW buffer AS 
     (SELECT r.name, r.operator, r.ref, r.route, ST_Buffer(geometry, 1, 'endcap=round join=round') AS geometry
-    FROM reldk r);
+    FROM rel_rh r);
 
 CREATE INDEX buffer_geom_idx
   ON buffer
@@ -13,7 +13,7 @@ CREATE INDEX buffer_geom_idx
 
 /*
 SELECT w.osm_id, w.road_type, w.cycling_infrastructure, w.geometry, 
-    b.name, b.operator, b.ref, b.route, b.geometry FROM waysdk w JOIN buffer b ON
+    b.name, b.operator, b.ref, b.route, b.geometry FROM ways_rh w JOIN buffer b ON
 	ST_ContainsProperly(b.geometry,w.geometry)
 	WHERE b.route = 'bicycle' ORDER BY osm_id; */
 
@@ -21,16 +21,16 @@ SELECT w.osm_id, w.road_type, w.cycling_infrastructure, w.geometry,
 CREATE VIEW ways_rel AS (SELECT w.osm_id, ARRAY_AGG(b.name ORDER BY b.name) AS name, 
 	ARRAY_AGG(b.operator ORDER BY b.name) AS operator, 
 	ARRAY_AGG(b.ref ORDER BY b.name) AS ref 
-	FROM waysdk w JOIN buffer b ON
+	FROM ways_rh w JOIN buffer b ON
 	ST_ContainsProperly(b.geometry,w.geometry)
 	WHERE b.route = 'bicycle' GROUP BY osm_id);
 
-ALTER TABLE waysdk 
+ALTER TABLE ways_rh 
 	ADD COLUMN route_name VARCHAR, 
 	ADD COLUMN route_operator VARCHAR, 
 	ADD COLUMN route_ref VARCHAR;
 
-UPDATE waysdk w SET route_name = r.name, route_operator = operator, route_ref = r.ref 
+UPDATE ways_rh w SET route_name = r.name, route_operator = operator, route_ref = r.ref 
     FROM ways_rel r WHERE w.osm_id = r.osm_id;
 
 DROP VIEW ways_rel;
