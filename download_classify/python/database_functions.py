@@ -156,7 +156,7 @@ testing_sa = to_postgis(study_area, 'sa_test', engine_test)
 '''
 # %%
 # Function for running query using sqlalchemy
-def run_query_alc(query, engine,success='Query successful!',fail='Query failed!'):
+def run_query_alc(query,engine,success='Query successful!',fail='Query failed!'):
     with engine.connect() as connection:
         try:
             result = connection.execute(query)
