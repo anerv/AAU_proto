@@ -500,3 +500,11 @@ download_classify/data/wayskbh.shp.AAU114415.10808.10080.sr.lock
 download_classify/data/wayskbh.shp.AAU114415.17136.10080.sr.lock
 download_classify/python/__pycache__/config.cpython-39.pyc
 download_classify/python/__pycache__/database_functions.cpython-39.pyc
+download_classify/data/ways_rh.cpg
+.gitignore
+.gitignore
+download_classify/data/ways_rh.dbf
+download_classify/data/ways_rh.prj
+.gitignore
+download_classify/data/ways_rh.shx
+download_classify/data/ways_rh.shp
