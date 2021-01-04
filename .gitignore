@@ -508,3 +508,6 @@ download_classify/data/ways_rh.prj
 .gitignore
 download_classify/data/ways_rh.shx
 download_classify/data/ways_rh.shp
+download_classify/data/cycling_infra.gpkg
+.gitignore
+.gitignore
