@@ -17,7 +17,7 @@ SELECT w.osm_id, w.road_type, w.cycling_infrastructure, w.geometry,
 	ST_ContainsProperly(b.geometry,w.geometry)
 	WHERE b.route = 'bicycle' ORDER BY osm_id; */
 
--- Use STRUCT instead?
+
 CREATE VIEW ways_rel AS (SELECT w.osm_id, ARRAY_AGG(b.name ORDER BY b.name) AS name, 
 	ARRAY_AGG(b.operator ORDER BY b.name) AS operator, 
 	ARRAY_AGG(b.ref ORDER BY b.name) AS ref 
@@ -25,6 +25,15 @@ CREATE VIEW ways_rel AS (SELECT w.osm_id, ARRAY_AGG(b.name ORDER BY b.name) AS n
 	ST_ContainsProperly(b.geometry,w.geometry)
 	WHERE b.route = 'bicycle' GROUP BY osm_id);
 
+/*
+-- Use STRUCT instead?
+CREATE VIEW ways_rel2 AS 
+	(SELECT MIN(w.osm_id) AS id_, ARRAY_AGG(STRUCT(b.name, b.operator, b.ref) 
+	ORDER BY b.name) AS route 
+	FROM ways_rh w JOIN buffer b 
+	ON ST_ContainsProperly(b.geometry,w.geometry)
+	WHERE b.route = 'bicycle' GROUP BY osm_id);
+*/
 ALTER TABLE ways_rh 
 	ADD COLUMN route_name VARCHAR, 
 	ADD COLUMN route_operator VARCHAR, 
