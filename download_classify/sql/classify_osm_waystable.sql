@@ -20,7 +20,8 @@ ADD COLUMN cycling_against VARCHAR DEFAULT NULL,
 ADD COLUMN elevation NUMERIC DEFAULT NULL,  
 ADD COLUMN pedestrian_allowed VARCHAR DEFAULT NULL,  
 ADD COLUMN on_street_park VARCHAR DEFAULT NULL,  
-ADD COLUMN surface_assumed VARCHAR DEFAULT NULL;  
+ADD COLUMN surface_assumed VARCHAR DEFAULT NULL,
+ADD COLUMN length_ FLOAT DEFAULT NULL;  
 
 /*
 ALTER TABLE ways_rh
@@ -40,9 +41,10 @@ DROP COLUMN on_street_park,
 DROP COLUMN surface_assumed;
 */
 
-/*
-Setting overall road type
-*/
+--Calculating segment lengths
+UPDATE ways_rh SET length_ = ST_Length(geometry);
+
+--Setting overall road type
 
 UPDATE ways_rh SET road_type =
     (CASE
@@ -186,6 +188,7 @@ WHERE cycling_allowed = 'yes';
 -- Roads with cycling infrastructure in only one side
 UPDATE ways_rh SET cycling_infrastructure =
     (CASE
+        WHEN "cycleway" IN ('left','right') THEN 'cykelsti_enkeltsidet'
         WHEN "cycleway:left" ILIKE '%track' AND ("cycleway:right" NOT IN ('lane','track','shared_lane','separate', 'opposite_lane','opposite_track')
             OR "cycleway:right" IS NULL) THEN 'cykelsti_enkeltsidet'
         WHEN "cycleway:left" IN ('lane','opposite_lane') AND ("cycleway:right" NOT IN ('lane','track','shared_lane','separate', 'opposite_lane','opposite_track')
