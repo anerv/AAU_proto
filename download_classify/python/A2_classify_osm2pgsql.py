@@ -9,7 +9,6 @@ import psycopg2 as pg
 from config import *
 from database_functions import connect_pg, run_query_pg
 import geopandas as gpd
-from pathlib import Path
 
 # %%
 # Connecting to the database
@@ -59,16 +58,14 @@ run_del_r = run_query_pg(rel_del, connection)
 #Classifying ways table
 
 #Filepath to sql file
-two_levels_up = str(Path(__file__).parents[1])
-fp_w = two_levels_up + '\sql/classify_osm_waystable.sql'
+fp_w = '../sql/classify_osm_waystable.sql'
 
 run_class_w = run_query_pg(fp_w, connection)
 #%%
 #Classyfing points table
 
 #Filepath to sql file
-two_levels_up = str(Path(__file__).parents[1])
-fp_p = two_levels_up + r'\sql/classify_osm_points.sql'
+fp_p =  '../sql/classify_osm_points.sql'
 
 run_class_p = run_query_pg(fp_p, connection)
 
@@ -76,8 +73,7 @@ run_class_p = run_query_pg(fp_p, connection)
 #Joining data about cycle routes to ways data
 
 #Filepath to sql file
-two_levels_up = str(Path(__file__).parents[1])
-fp_r = two_levels_up + r'\sql/join_relations_to_ways.sql'
+fp_r = '../sql/join_relations_to_ways.sql'
 
 run_ways_rel = run_query_pg(fp_r, connection)
 

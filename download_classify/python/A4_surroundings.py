@@ -12,7 +12,6 @@ import sqlalchemy
 import psycopg2
 import geopandas as gpd
 import pandas as pd
-from pathlib import Path
 # %%
 # Connection to db
 #connection = connect_pg(db_name, db_user, db_password)
@@ -85,8 +84,7 @@ run_index = run_query_alc(index_cl, engine)
 # %%
 # Update attribute for ways based on land cover
 #run file
-two_levels_up = str(Path(__file__).parents[1])
-fp = two_levels_up + '\\sql\\land_cover.sql'
+fp = '..\\sql\\land_cover.sql'
 
 connection = connect_pg(db_name, db_user, db_password, db_host)
 run_lc = run_query_pg(fp, connection)

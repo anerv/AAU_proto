@@ -4,7 +4,6 @@
 from config import *
 from database_functions import run_query_pg, connect_pg, connect_alc, to_postgis
 import geopandas as gpd
-from pathlib import Path
 #%%
 #Connecting to database
 connection = connect_pg(db_name, db_user, db_password)
@@ -26,8 +25,8 @@ service_poly = gpd.GeoDataFrame.from_postgis(retrieve_poly_s, connection, geom_c
 drop_cols = ['flashing_lights','maxspeed:advisory','moped','motorcar','motor_vehicle','parking:lane','parking:lane:right','parking:lane:left','parking:lane:both','public_transport','ref','service','source:maxspeed','z_order','way_area']
 ways_gdf.drop(columns=drop_cols, inplace=True)
 #%%
-two_levels_up = str(Path(__file__).parents[1])
-fp_gpkg = two_levels_up + '\\data\\' + 'cycling_infra.gpkg'
+fp_gpkg = '..\\data\\' + 'cycling_infra.gpkg'
+#%%
 
 ways_gdf.to_file(fp_gpkg, layer=ways_table, driver="GPKG")
 points_s_gdf.to_file(fp_gpkg, layer='points_service', driver="GPKG")
@@ -44,9 +43,9 @@ drop_cols = ['flashing_lights','maxs_advised','moped','motorcar','motorveh.','p_
 ways_gdf2.drop(columns=drop_cols, inplace=True)
 # %%
 #Saving tables to shapefile
-fp_ways = two_levels_up + '\\data\\' + ways_table + '.shp'
-fp_points_i = two_levels_up + '\\data\\' + 'points_infra.shp'
-fp_points_s = two_levels_up + '\\data\\' + 'points_service.shp'
+fp_ways = '..\\data\\' + ways_table + '.shp'
+fp_points_i = '..\\data\\' + 'points_infra.shp'
+fp_points_s = '..\\data\\' + 'points_service.shp'
 #%%
 ways_gdf2.to_file(fp_ways)
 points_i_gdf.to_file(fp_points_i)

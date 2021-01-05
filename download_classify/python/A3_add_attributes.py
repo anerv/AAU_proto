@@ -9,7 +9,6 @@ from config import *
 from database_functions import connect_pg, run_query_pg, connect_alc, to_postgis
 import sqlalchemy
 import geopandas as gpd
-from pathlib import Path
 #%%
 #Connecting to database
 engine = connect_alc(db_name, db_user, db_password)
@@ -67,16 +66,15 @@ else:
 #%%
 #Create spatial index
 create_index_light = 'CREATE INDEX light_geom_idx ON street_light USING GIST (geometry);'
-#index_light = run_query_pg(create_index_light,connection)
+index_light = run_query_pg(create_index_light,connection)
 index_traffic = run_query_pg('CREATE INDEX counts_geom_idx ON traffic_counts USING GIST (geometry);',connection)
 
 #%%
 
 #Join traffic lights and traffic counts to nearest way
 
-two_levels_up = str(Path(__file__).parents[1])
-fp_l = two_levels_up + '\\sql\\nearest_line_from_light.sql'
-fp_t = two_levels_up + '\\sql\\nearest_line_from_traffic_count.sql'
+fp_l = '..\\sql\\nearest_line_from_light.sql'
+fp_t = '..\\sql\\nearest_line_from_traffic_count.sql'
 
 #join_lights = run_query_pg(fp_l, connection)
 join_traffic = run_query_pg(fp_t,connection, close=True)
