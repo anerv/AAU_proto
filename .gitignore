@@ -519,3 +519,5 @@ download_classify/data/CLC12_DK.shx
 download_classify/data/CLC12_DK.sbn
 download_classify/data/CLC12_DK.shp
 download_classify/data/clc_legend_modified.csv
+download_classify/data/cycling_infra_2.gpkg
+download_classify/data/cycling_infra_2.gpkg-journal

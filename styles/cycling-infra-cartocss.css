@@ -1,30 +1,80 @@
 #layer  {
-    [cycling_infrastructure=~'cykelbane.*'] {
-       /* This rule is the sole rule for cykelbane_enkelsidet*/
+    [cycling_infrastructure='cykelbane i kryds']{
+        line-width: 1.5;
+        line-color: #34deeb;
+      }
+  
+    [cycling_infrastructure=~'cykelbane'] {
+       /* This rule is for cykelbane_enkelsidet*/
+       line-width: 1.5;
+       line-color: #c94fd0;
+     }
+
+    [cycling_infrastructure='cykelbane_begge'] {
+
+    ::left{
+       line-width: 1.5;
+       line-color: #c94fd0;
+       line-offset: 5;
+  		}
+  
+    ::right{
+        line-width: 1.5;
+        line-color: #c94fd0; 
+        line-offset: -5;
+        
+    	}
+  }
+
+    [cycling_infrastructure='cykelbane_venstre']{
        line-width: 1.5;
        line-color: #c94fd0 ;
+       line-offset: 2;
      }
-    [cycling_infrastructure='cykelbane i kryds'] {
+    [cycling_infrastructure='cykelbane_hoejre'] {
        line-width: 1.5;
-       line-color: #34deeb;
+       line-color: #c94fd0 ;
+       line-offset: -2;
      }
-    [cycling_infrastructure='cykelbane'] {
-       /*Value is just cykelbane - implies a lane in both sides*/
-       /*line-width: 1.5;
-       line-color: #c94fd0 ; */
+     
+  
+    [cycling_infrastructure=~'cykelsti'] {
+       /* This rule is for cykelbane_enkelsidet*/
+       line-width: 1.5;
+       line-color: #af071d;
+     }
+
+    [cycling_infrastructure='cykelsti_begge'] {
+    	
+    
+    ::left{
+       line-width: 1.5;
+       line-color: #af071d;
+       line-offset: 5;
+  		}
+  
+    ::right{
+        line-width: 1.5;
+        line-color: #af071d; 
+        line-offset: -5;
+        
+    	}
+  }
+
+    [cycling_infrastructure='cykelsti_venstre']{
+       line-width: 1.5;
+       line-color: #af071d;
        line-offset: 3;
-       
      }
-    [cycling_infrastructure='cykelbane'] {
-       /*line-width: 1.5;
-       line-color: #c94fd0 ; */
+    [cycling_infrastructure='cykelsti_hoejre'] {
+       line-width: 1.5;
+       line-color: #af071d;
        line-offset: -3;
-       /*line-offset: 2; */
-     }
-    [cycling_infrastructure='cykelbane_enkeltsidet'] {
-       /*line-width: 1.5;
-       line-color: #c94fd0 ; */
-       line-offset: -3;
-       /*line-offset: 2; */
-     }
-   }
+     }		   
+  
+ [cycling_infrastructure='sti_cykling_tilladt'] {
+    line-width: 1.5;
+    line-color: #544042;
+    line-dasharray: 3,2;
+  	}
+  }
