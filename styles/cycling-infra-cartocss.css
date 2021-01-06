@@ -1,0 +1,30 @@
+#layer  {
+    [cycling_infrastructure=~'cykelbane.*'] {
+       /* This rule is the sole rule for cykelbane_enkelsidet*/
+       line-width: 1.5;
+       line-color: #c94fd0 ;
+     }
+    [cycling_infrastructure='cykelbane i kryds'] {
+       line-width: 1.5;
+       line-color: #34deeb;
+     }
+    [cycling_infrastructure='cykelbane'] {
+       /*Value is just cykelbane - implies a lane in both sides*/
+       /*line-width: 1.5;
+       line-color: #c94fd0 ; */
+       line-offset: 3;
+       
+     }
+    [cycling_infrastructure='cykelbane'] {
+       /*line-width: 1.5;
+       line-color: #c94fd0 ; */
+       line-offset: -3;
+       /*line-offset: 2; */
+     }
+    [cycling_infrastructure='cykelbane_enkeltsidet'] {
+       /*line-width: 1.5;
+       line-color: #c94fd0 ; */
+       line-offset: -3;
+       /*line-offset: 2; */
+     }
+   }
