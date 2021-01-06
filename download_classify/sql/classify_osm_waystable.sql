@@ -38,7 +38,8 @@ DROP COLUMN cycling_against,
 DROP COLUMN elevation,
 DROP COLUMN pedestrian_allowed,
 DROP COLUMN on_street_park,
-DROP COLUMN surface_assumed;
+DROP COLUMN surface_assumed,
+DROP COLUMN length_;
 */
 
 --Calculating segment lengths
@@ -139,10 +140,10 @@ UPDATE ways_rh SET cycling_infrastructure = 'cykelsti' WHERE highway = 'cycleway
 UPDATE ways_rh SET cycling_infrastructure =
     (CASE
         WHEN cycleway = 'crossing' THEN 'cykelbane i kryds'
-        WHEN cycleway = 'lane' THEN 'cykelbane'
-        WHEN cycleway = 'opposite_lane' THEN 'cykelbane'
-        WHEN cycleway = 'opposite_track' THEN 'cykelsti'
-        WHEN cycleway = 'track' THEN 'cykelsti'
+        WHEN cycleway = 'lane' THEN 'cykelbane_begge'
+        WHEN cycleway = 'opposite_lane' THEN 'cykelbane_begge' -- OBS check
+        WHEN cycleway = 'opposite_track' THEN 'cykelsti_begge' --OBS CHECK
+        WHEN cycleway = 'track' THEN 'cykelsti_begge'
         WHEN cycleway = 'shared_lane' OR bicycle = 'shared_lane' THEN 'delt_koerebane'
         ELSE cycling_infrastructure
     END)
@@ -159,13 +160,12 @@ Cycleway:left/right are only used when no type has been assigned based on the ke
 UPDATE ways_rh SET cycling_infrastructure =
     (CASE
         WHEN "cycleway:left" = 'crossing' OR "cycleway:right" = 'crossing' THEN 'cykelbane i kryds'
-        WHEN "cycleway:left" = 'lane' AND "cycleway:right" = 'lane' THEN 'cykelbane_begge'
         WHEN "cycleway:left" ILIKE '%track' AND "cycleway:right" ILIKE '%track' THEN 'cykelsti_begge'
         WHEN "cycleway:left" IN ('lane', 'opposite_lane') AND "cycleway:right" IN ('lane','opposite_lane') 
         THEN 'cykelbane_begge'
         WHEN "cycleway:both" ILIKE '%track' THEN 'cykelsti_begge'
         WHEN "cycleway:both" IN ('lane','opposite_lane') THEN 'cykelbane_begge'
-        WHEN "cycleway:both" = 'shared_lane' THEN 'delt_koerebane'
+        WHEN "cycleway:both" = 'shared_lane' THEN 'delt_koerebane_begge'
         ELSE cycling_infrastructure
     END)
 WHERE cycling_allowed = 'yes';
@@ -173,13 +173,14 @@ WHERE cycling_allowed = 'yes';
 -- Roads with different types of cycling infrastructure/tags in different sides
 UPDATE ways_rh SET cycling_infrastructure =
     (CASE
-        WHEN ("cycleway:left" ILIKE '%track' AND ("cycleway:right" = 'lane' OR "cycleway:right" = 'opposite_lane')) 
-            OR ("cycleway:right" ILIKE '%track' AND ("cycleway:left" = 'lane' OR "cycleway:left" = 'opposite_lane'))
-            THEN 'cykelsti_cykelbane'
-        WHEN "cycleway:left" = 'track' AND "cycleway:right" = 'separate' THEN 'cykelsti'
-        WHEN "cycleway:right" = 'track' AND "cycleway:left" = 'separate' THEN 'cykelsti'
-        WHEN "cycleway:left" = 'lane' AND "cycleway:right" = 'separate' THEN 'cykelbane'
-        WHEN "cycleway:right" = 'lane' AND "cycleway:left" = 'separate' THEN 'cykelbane'
+        WHEN ("cycleway:left" ILIKE '%track' AND ("cycleway:right" = 'lane' OR "cycleway:right" = 'opposite_lane'))
+            THEN 'cykelsti_venstre_cykelbane_hoejre'
+        WHEN ("cycleway:right" ILIKE '%track' AND ("cycleway:left" = 'lane' OR "cycleway:left" = 'opposite_lane'))
+            THEN 'cykelsti_hoejre_cykelbane_venstre'
+        WHEN "cycleway:left" ILIKE '%track' AND "cycleway:right" = 'separate' THEN 'cykelsti_venstre'
+        WHEN "cycleway:right" ILIKE '%track' AND "cycleway:left" = 'separate' THEN 'cykelsti_hoejre'
+        WHEN "cycleway:left" IN ('lane','opposite_lane') AND "cycleway:right" = 'separate' THEN 'cykelbane_venstre'
+        WHEN "cycleway:right" IN ('lane','opposite_lane') AND "cycleway:left" = 'separate' THEN 'cykelbane_hoejre'
         ELSE cycling_infrastructure
     END)
 WHERE cycling_allowed = 'yes';
@@ -188,19 +189,20 @@ WHERE cycling_allowed = 'yes';
 -- Roads with cycling infrastructure in only one side
 UPDATE ways_rh SET cycling_infrastructure =
     (CASE
-        WHEN "cycleway" IN ('left','right') THEN 'cykelsti_enkeltsidet'
+        WHEN "cycleway" = 'left' THEN 'cykelsti_venstre'
+        WHEN "cycleway" = 'right' THEN 'cykelsti_hoejre'
         WHEN "cycleway:left" ILIKE '%track' AND ("cycleway:right" NOT IN ('lane','track','shared_lane','separate', 'opposite_lane','opposite_track')
-            OR "cycleway:right" IS NULL) THEN 'cykelsti_enkeltsidet'
+            OR "cycleway:right" IS NULL) THEN 'cykelsti_venstre'
         WHEN "cycleway:left" IN ('lane','opposite_lane') AND ("cycleway:right" NOT IN ('lane','track','shared_lane','separate', 'opposite_lane','opposite_track')
-            OR "cycleway:right" IS NULL) THEN 'cykelbane_enkeltsidet'
+            OR "cycleway:right" IS NULL) THEN 'cykelbane_venstre'
         WHEN "cycleway:right" ILIKE '%track' AND ("cycleway:left" NOT IN ('lane','track','shared_lane','separate', 'opposite_lane','opposite_track')
-            OR "cycleway:left" IS NULL) THEN 'cykelsti_enkeltsidet'
+            OR "cycleway:left" IS NULL) THEN 'cykelsti_hoejre'
         WHEN "cycleway:right" IN ('lane','opposite_lane') AND ("cycleway:left" NOT IN ('lane','track','shared_lane','separate', 'opposite_lane','opposite_track')
-            OR "cycleway:left" IS NULL) THEN 'cykelbane_enkeltsidet'
+            OR "cycleway:left" IS NULL) THEN 'cykelbane_hoejre'
         WHEN "cycleway:left" = 'shared_lane' AND ("cycleway:right" NOT IN ('lane','track','shared_lane','separate', 'opposite_lane','opposite_track')
-            OR "cycleway:right" IS NULL) THEN 'delt_koerebane_enkeltsidet'
+            OR "cycleway:right" IS NULL) THEN 'delt_koerebane_venstre'
         WHEN "cycleway:right" = 'shared_lane' AND ("cycleway:left" NOT IN ('lane','track','shared_lane','separate', 'opposite_lane','opposite_track')
-            OR "cycleway:left" IS NULL) THEN 'delt_koerebane_enkeltsidet'
+            OR "cycleway:left" IS NULL) THEN 'delt_koerebane_hoejre'
         ELSE cycling_infrastructure
     END)
 WHERE cycling_allowed = 'yes';
@@ -209,12 +211,14 @@ WHERE cycling_allowed = 'yes';
 -- Cycling infrastructure in one side and shared lane in the other
 UPDATE ways_rh SET cycling_infrastructure =
     (CASE
-        WHEN ("cycleway:left" ILIKE '%track' AND "cycleway:right" = 'shared_lane') 
-            OR ("cycleway:left" = 'shared_lane' AND "cycleway:right" ILIKE '%track')
-            THEN 'cykelsti_og_delt_koerebane'
-        WHEN ("cycleway:left" IN ('lane','opposite_lane') AND "cycleway:right" = 'shared_lane') 
-            OR ("cycleway:left" = 'shared_lane' AND "cycleway:right" IN ('lane','opposite_lane'))
-            THEN 'cykelbane_og_delt_koerebane'
+        WHEN ("cycleway:left" ILIKE '%track' AND "cycleway:right" = 'shared_lane')
+            THEN 'cykelsti_venstre_og_delt_koerebane_hoejre'
+        WHEN ("cycleway:left" = 'shared_lane' AND "cycleway:right" ILIKE '%track')
+            THEN 'cykelsti_hoejre_delt_koerebane_venstre'
+        WHEN ("cycleway:left" IN ('lane','opposite_lane') AND "cycleway:right" = 'shared_lane')
+            THEN 'cykelbane_venstre_delt_koerebane_hoejre'
+        WHEN ("cycleway:left" = 'shared_lane' AND "cycleway:right" IN ('lane','opposite_lane'))
+            THEN 'cykelbane_hoejre_delt_koerebane_venstre'
         ELSE cycling_infrastructure
         END)
 WHERE cycling_allowed = 'yes';
@@ -249,11 +253,11 @@ WHERE "highway" =  'cycleway' AND (oneway = 'no' OR "oneway:bicycle" = 'no');
 -- Updating a simplified version of cycling_infrastructure
 UPDATE ways_rh SET cycling_infra_simple = 
     (CASE
-        WHEN cycling_infrastructure IN ('cykelbane','cykelbane_begge','cykelbane_enkeltsidet')
+        WHEN cycling_infrastructure IN ('cykelbane','cykelbane_begge','cykelbane_venstre, cykelbane_hoejre')
             THEN 'cykelbane'
-        WHEN cycling_infrastructure IN ('cykelsti','cykelsti_begge','cykelsti_enkeltsidet')
+        WHEN cycling_infrastructure IN ('cykelsti','cykelsti_begge','cykelsti_venstre, cykelsti_hoejre')
             THEN 'cykelsti'
-        WHEN cycling_infrastructure IN ('delt_koerebane','delt_koerebane_enkeltsidet')
+        WHEN cycling_infrastructure IN ('delt_koerebane','delt_koerebane_venstre', 'delt_koerebane_hoejre')
             THEN 'delt_koerebane'
         WHEN road_type IN ('sti','gangsti') AND cycling_infrastructure IS NULL AND cycling_allowed = 'yes'
             THEN 'sti_cykling_tilladt'
