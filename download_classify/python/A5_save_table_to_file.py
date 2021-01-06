@@ -15,23 +15,26 @@ retrieve_points_i = "SELECT * FROM points_infra;"
 retrieve_poly_s = "SELECT * FROM bicycle_service;"
 #%%
 ways_gdf = gpd.GeoDataFrame.from_postgis(retrieve_ways, connection, geom_col='geometry')
+'''
 points_s_gdf = gpd.GeoDataFrame.from_postgis(retrieve_points_s, connection, geom_col='geometry')
 points_i_gdf = gpd.GeoDataFrame.from_postgis(retrieve_points_i, connection, geom_col='geometry')
 service_poly = gpd.GeoDataFrame.from_postgis(retrieve_poly_s, connection, geom_col='geometry')
-
+'''
 # %%
 #Saving tables to geopackage
 #Drop columns to simplify file
 drop_cols = ['flashing_lights','maxspeed:advisory','moped','motorcar','motor_vehicle','parking:lane','parking:lane:right','parking:lane:left','parking:lane:both','public_transport','ref','service','source:maxspeed','z_order','way_area']
 ways_gdf.drop(columns=drop_cols, inplace=True)
 #%%
-fp_gpkg = '..\\data\\' + 'cycling_infra.gpkg'
+fp_gpkg = '..\\data\\' + 'cycling_infra_2.gpkg'
 #%%
 
 ways_gdf.to_file(fp_gpkg, layer=ways_table, driver="GPKG")
+'''
 points_s_gdf.to_file(fp_gpkg, layer='points_service', driver="GPKG")
 points_i_gdf.to_file(fp_gpkg, layer='points_infra', driver="GPKG")
 service_poly.to_file(fp_gpkg, layer='poly_service', driver="GPKG")
+'''
 #%%
 #If a shapefile is needed:
 #Renaming column names to be compatible with shapefile limitations
