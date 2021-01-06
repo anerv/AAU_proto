@@ -141,8 +141,8 @@ UPDATE ways_rh SET cycling_infrastructure =
     (CASE
         WHEN cycleway = 'crossing' THEN 'cykelbane i kryds'
         WHEN cycleway = 'lane' THEN 'cykelbane_begge'
-        WHEN cycleway = 'opposite_lane' THEN 'cykelbane_begge' -- OBS check
-        WHEN cycleway = 'opposite_track' THEN 'cykelsti_begge' --OBS CHECK
+        WHEN cycleway = 'opposite_lane' THEN 'cykelbane'
+        WHEN cycleway = 'opposite_track' THEN 'cykelsti' 
         WHEN cycleway = 'track' THEN 'cykelsti_begge'
         WHEN cycleway = 'shared_lane' OR bicycle = 'shared_lane' THEN 'delt_koerebane'
         ELSE cycling_infrastructure
