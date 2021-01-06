@@ -225,7 +225,7 @@ WHERE cycling_allowed = 'yes';
 
 -- Paths with cycling
 UPDATE ways_rh SET cycling_infrastructure = 'sti_cykling_tilladt', cycling_infra_simple = 'sti_cykling_tilladt'
-WHERE highway = 'path' AND (cycling_infrastructure = 'yes' OR bicycle = 'yes');
+WHERE highway = 'path' AND (cycling_infrastructure = 'yes' OR bicycle IN ('yes','designated'));
 
 -- Categorising path types
 UPDATE ways_rh SET path_segregation =
