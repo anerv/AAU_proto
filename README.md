@@ -21,6 +21,7 @@ Update info in *config.py* with the necessary info about database, name of study
 It is assumed that a postgresql database has been created with the necessary extensions (see *loading_osm.sql*).
 A number of Python modules such as geopandas, sqlalchemy, psycopg2 must be installed before use.
 
+In the current version table names must be manually changed in the SQL-scripts.
 
 ## License
 OpenStreetMap® is open data, licensed under the [Open Data Commons Open Database License](https://www.openstreetmap.org/copyright).
