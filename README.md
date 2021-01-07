@@ -33,7 +33,7 @@ If you have any questions (or need help with the Danish terminology) feel free t
 ## TO-DO
 - Add document describing re-classification method
 - Fix how highway type is reclassified/translated to the Danish road types so it matches official road types
-
+- Add elevation data
 
 
 
