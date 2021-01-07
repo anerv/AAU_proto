@@ -255,7 +255,7 @@ UPDATE ways_rh SET cycling_infra_simple =
     (CASE
         WHEN cycling_infrastructure IN ('cykelbane','cykelbane_begge','cykelbane_venstre, cykelbane_hoejre')
             THEN 'cykelbane'
-        WHEN cycling_infrastructure IN ('cykelsti','cykelsti_begge','cykelsti_venstre, cykelsti_hoejre')
+        WHEN cycling_infrastructure IN ('cykelsti','cykelsti_begge','cykelsti_venstre', 'cykelsti_hoejre')
             THEN 'cykelsti'
         WHEN cycling_infrastructure IN ('delt_koerebane','delt_koerebane_venstre', 'delt_koerebane_hoejre')
             THEN 'delt_koerebane'
