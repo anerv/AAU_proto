@@ -61,6 +61,10 @@ run_del_r = run_query_pg(rel_del, connection)
 fp_w = '../sql/classify_osm_waystable.sql'
 
 run_class_w = run_query_pg(fp_w, connection)
+
+#%%
+#Adding information about administrative area
+
 #%%
 #Classyfing points table
 
@@ -79,12 +83,12 @@ run_ways_rel = run_query_pg(fp_r, connection)
 
 #%%
 #Saving bicycle parking and bicycle rental to separate table
-bicycle_service = "CREATE TABLE bicycle_service AS (SELECT osm_id, amenity, geometry FROM %s WHERE amenity IN ('bicycle_parking','bicycle_rental'))" % lu_table
-run_bi_s = run_query_pg(bicycle_service, connection)
+poly_service = "CREATE TABLE poly_service AS (SELECT osm_id, amenity, geometry FROM %s WHERE amenity IN ('bicycle_parking','bicycle_rental'))" % lu_table
+run_bi_s = run_query_pg(poly_service, connection)
 
 #%%
 #Creating spatial index for table with cycle services
-index_bi_s = "CREATE INDEX b_s_geom_idx ON bicycle_service USING GIST (geometry);"
+index_bi_s = "CREATE INDEX b_s_geom_idx ON poly_service USING GIST (geometry);"
 create_index = run_query_pg(index_bi_s, connection)
 
 #%%

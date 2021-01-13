@@ -9,6 +9,9 @@ import geopandas as gpd
 import sqlalchemy
 import psycopg2 as pg
 #%%
+# Creating engine to connect to database
+engine = connect_alc(db_name, db_user, db_password)
+#%%
 # Provide polygon defining the study area
 try:
     #if format is shapefile only path is needed
@@ -20,17 +23,28 @@ except(Exception) as error:
 #study_area.plot()
 
 #%%
-# Creating engine to connect to database
-engine = connect_alc(db_name, db_user, db_password)
-
-#%%
 #Loading study area to database
-table_name_sa = 'study_area' + area_name
+table_name_sa = 'study_area_' + area_name
 to_postgis(study_area, table_name_sa, engine)
 
 #%%
+'''
+# Polygons defining administrative boundaries, if different from study area
+#Uncomment if adm layer is needed
+try:
+    #if format is shapefile only path is needed
+    adm_boundary = gpd.read_file(fp_adm)
+except(Exception) as error:
+    #if format is geopackage use both filepath and layer name
+    adm_boundary = gpd.read_file(fp_adm, layer=adm_layer_name)
+
+#Loading adm boundary to database
+table_name_adm = 'adm_bound_' + area_name
+to_postgis(adm_boundary, table_name_adm, engine)
+'''
+#%%
 #Checking table names
-print('Table names are:', ways_table, points_table, rel_table, sa_table, lu_table)
+print('Table names are:', ways_table, points_table, rel_table, sa_table, lu_table, adm_table)
 
 #%%
 # Creating new tables
