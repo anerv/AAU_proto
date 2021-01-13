@@ -522,3 +522,14 @@ download_classify/data/clc_legend_modified.csv
 download_classify/data/cycling_infra_2.gpkg
 download_classify/data/cycling_infra_2.gpkg-journal
 download_classify/data/traffic_counts.gpkg
+download_classify/data/test.geojson
+download_classify/data/test.topo.json
+download_classify/data/ways_centroids_new.xlsx
+.gitignore
+download_classify/data/ways_centroids.xlsx
+download_classify/data/ways_centroids.csv
+download_classify/data/ways_latlong.csv
+.gitignore
+download_classify/data/service_poly_latlong.csv
+download_classify/data/service_points_latlong.csv
+download_classify/data/service_infra_latlong.csv
