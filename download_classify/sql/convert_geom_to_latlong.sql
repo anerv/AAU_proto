@@ -18,18 +18,18 @@ UPDATE traffic_counts
     lat = ST_Y(ST_Transform(geometry,4326));
 
 -- Bicycle service polygons
-ALTER TABLE bicycle_service
+ALTER TABLE poly_service
     ADD COLUMN lat FLOAT, 
     ADD COLUMN long FLOAT;
 
-UPDATE bicycle_service 
+UPDATE poly_service 
     SET long = ST_X (ST_Transform(ST_Centroid(geometry),4326)),
     lat = ST_Y(ST_Transform(ST_Centroid(geometry),4326));
 
 -- Bicycle infrastructure
 ALTER TABLE points_infra
     ADD COLUMN lat FLOAT,
-    ADD COULMN long FLOAT;
+    ADD COLUMN long FLOAT;
 
 UPDATE points_infra 
     SET long = ST_X (ST_Transform(geometry,4326)),
