@@ -3,11 +3,15 @@ Configurations used in the analysis
 '''
 
 #Name of study area
-area_name = '_rh'
+area_name = 'rh'
 
 #Filepath to polygon defining the study area
 fp_sa = '../data/region_hovedstaden.gpkg'
 sa_layer_name ="region_hovedstaden"
+
+#Filepath to polygon defining administrative boundaries
+fp_adm = '../data/region_hovedstaden.gpkg'
+adm_layer_name ="region_hovedstaden"
 
 #Filepath to Corine land cover data
 fp_lc = '../data/CLC12_DK.shp'
@@ -30,9 +34,10 @@ db_name = 'rh'
 db_port = '5432'
 
 #Setting table names
-ways_table = "ways" + area_name
-points_table = "points" + area_name
-rel_table = "rel" + area_name
-sa_table = "study_area" + area_name
-poly_table = "poly" + area_name
-lu_table = "land_use" + area_name
+ways_table = "ways_" + area_name
+points_table = "points_" + area_name
+rel_table = "rel_" + area_name
+sa_table = "study_area_" + area_name
+poly_table = "poly_" + area_name
+lu_table = "land_use_" + area_name
+adm_table = 'adm_boundary_' + area_name
