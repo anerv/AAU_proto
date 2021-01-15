@@ -16,12 +16,18 @@ retrieve_points_i = "SELECT * FROM points_infra;"
 retrieve_poly_s = "SELECT * FROM poly_service;"
 #%%
 #Loading data to geodataframes
-ways_gdf = gpd.GeoDataFrame.from_postgis(retrieve_ways, connection, geom_col='geometry')
-points_s_gdf = gpd.GeoDataFrame.from_postgis(retrieve_points_s, connection, geom_col='geometry')
-points_i_gdf = gpd.GeoDataFrame.from_postgis(retrieve_points_i, connection, geom_col='geometry')
-poly_service = gpd.GeoDataFrame.from_postgis(retrieve_poly_s, connection, geom_col='geometry')
+ways_gdf = gpd.GeoDataFrame.from_postgis(retrieve_ways, connection, geom_col='geom')
+points_s_gdf = gpd.GeoDataFrame.from_postgis(retrieve_points_s, connection, geom_col='geom')
+points_i_gdf = gpd.GeoDataFrame.from_postgis(retrieve_points_i, connection, geom_col='geom')
+poly_service = gpd.GeoDataFrame.from_postgis(retrieve_poly_s, connection, geom_col='geom')
 
 # %%
+'''
+#Get test data instead of entire ways table
+get_test = "SELECT * FROM test;"
+ways_gdf = gpd.GeoDataFrame.from_postgis(get_test, connection, geom_col='geom')
+'''
+#%%
 #Saving tables to geopackage
 #Drop columns to simplify file
 drop_cols = ['flashing_lights','maxspeed:advisory','moped','motorcar','motor_vehicle','parking:lane','parking:lane:right','parking:lane:left','parking:lane:both','public_transport','ref','service','source:maxspeed','z_order','way_area']
@@ -57,9 +63,12 @@ points_s_gdf.to_file(fp_points_s)
 #%%
 #Saving tables to csv
 
-#First, convert geometry to lat long (lines and polygons are converted to centroids)
-convert_geometry = run_query_pg('../sql/convert_geom_to_latlong.sql', connection)
+#First, convert geom to lat long (lines and polygons are converted to centroids)
+convert_geom = run_query_pg('../sql/convert_geom_to_latlong.sql', connection)
 
+#If geometries are neede as WKT
+
+#OBS add here!!
 #%%
 #Copying geodataframes
 ways_latlong = ways_gdf.copy(deep=True)
@@ -68,14 +77,14 @@ serviceinfra_latlong = points_i_gdf.copy(deep=True)
 servicepoly_latlong = poly_service.copy(deep=True)
 
 #%%
-#Drop columns from way data to simplify file (including geometry)
-drop_cols_cent = ['geometry', 'flashing_lights','maxspeed:advisory','moped','motorcar','motor_vehicle','parking:lane','parking:lane:right','parking:lane:left','parking:lane:both','public_transport','ref','service','source:maxspeed','z_order','way_area']
+#Drop columns from way data to simplify file (including geom)
+drop_cols_cent = ['geom', 'flashing_lights','maxspeed:advisory','moped','motorcar','motor_vehicle','parking:lane','parking:lane:right','parking:lane:left','parking:lane:both','public_transport','ref','service','source:maxspeed','z_order','way_area']
 ways_latlong.drop(columns=drop_cols_cent, inplace=True)
 
-#Drop geometry column from other geodataframes
-servicepoints_latlong.drop(columns='geometry',inplace=True)
-serviceinfra_latlong.drop(columns='geometry',inplace=True)
-servicepoly_latlong.drop(columns='geometry',inplace=True)
+#Drop geom column from other geodataframes
+servicepoints_latlong.drop(columns='geom',inplace=True)
+serviceinfra_latlong.drop(columns='geom',inplace=True)
+servicepoly_latlong.drop(columns='geom',inplace=True)
 # %%
 #Convert to regular dataframe to enable saving to csv
 ways_df = pd.DataFrame(ways_latlong)
