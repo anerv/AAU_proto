@@ -61,11 +61,11 @@ create_relations = run_query_alc(copy_rel, engine, success='Copy of table made f
 create_lu = run_query_alc(copy_lu, engine, success='Copy of table made for land use')
 #%%
 #Renaming geomtry columns
-#Using osm2pgsql the geometry col is initially called 'way'
-rename1 = 'ALTER TABLE %s RENAME COLUMN way TO geometry;' % ways_table
-rename2 = 'ALTER TABLE %s RENAME COLUMN way TO geometry;' % points_table
-rename3 = 'ALTER TABLE %s RENAME COLUMN way TO geometry;' % rel_table
-rename4 = 'ALTER TABLE %s RENAME COLUMN way TO geometry;' % lu_table
+#Using osm2pgsql the geom col is initially called 'way'
+rename1 = 'ALTER TABLE %s RENAME COLUMN way TO geom;' % ways_table
+rename2 = 'ALTER TABLE %s RENAME COLUMN way TO geom;' % points_table
+rename3 = 'ALTER TABLE %s RENAME COLUMN way TO geom;' % rel_table
+rename4 = 'ALTER TABLE %s RENAME COLUMN way TO geom;' % lu_table
 
 rename_ways = run_query_alc(rename1, engine)
 rename_points = run_query_alc(rename2, engine)
@@ -74,15 +74,15 @@ rename_lu = run_query_alc(rename4, engine)
 
 #%%
 #Reprojecting data
-reproj1 = "ALTER TABLE %s ALTER COLUMN geometry TYPE geometry(LINESTRING,%d) USING ST_Transform(geometry,%d)" % (ways_table, crs, crs)
+reproj1 = "ALTER TABLE %s ALTER COLUMN geom TYPE geom(LINESTRING,%d) USING ST_Transform(geom,%d)" % (ways_table, crs, crs)
 
-reproj2 = "ALTER TABLE %s ALTER COLUMN geometry TYPE geometry(POINT,%d) USING ST_Transform(geometry,%d)" % (points_table, crs, crs)
+reproj2 = "ALTER TABLE %s ALTER COLUMN geom TYPE geom(POINT,%d) USING ST_Transform(geom,%d)" % (points_table, crs, crs)
 
-reproj3 = "ALTER TABLE %s ALTER COLUMN geometry TYPE geometry(LINESTRING,%d) USING ST_Transform(geometry,%d)" % (rel_table, crs, crs)
+reproj3 = "ALTER TABLE %s ALTER COLUMN geom TYPE geom(LINESTRING,%d) USING ST_Transform(geom,%d)" % (rel_table, crs, crs)
 
-reproj4 = "ALTER TABLE %s ALTER COLUMN geometry TYPE geometry(MULTIPOLYGON,%d) USING ST_Transform(geometry,%d)" % (sa_table, crs, crs)
+reproj4 = "ALTER TABLE %s ALTER COLUMN geom TYPE geom(MULTIPOLYGON,%d) USING ST_Transform(geom,%d)" % (sa_table, crs, crs)
 
-reproj5 = "ALTER TABLE %s ALTER COLUMN geometry TYPE geometry(POLYGON,%d) USING ST_Transform(geometry,%d)" % (lu_table, crs, crs)
+reproj5 = "ALTER TABLE %s ALTER COLUMN geom TYPE geom(POLYGON,%d) USING ST_Transform(geom,%d)" % (lu_table, crs, crs)
 
 reproject_ways = run_query_alc(reproj1, engine)
 reproject_points = run_query_alc(reproj2, engine)
@@ -92,11 +92,11 @@ reproject_lu = run_query_alc(reproj5, engine)
 
 #%%
 #Check projections
-ways_crs = "SELECT find_SRID('public', '%s', 'geometry');" % ways_table
-points_crs = "SELECT find_SRID('public', '%s', 'geometry');" % points_table
-rel_crs = "SELECT find_SRID('public', '%s', 'geometry');" % rel_table
-sa_crs = "SELECT find_SRID('public', '%s', 'geometry');" % sa_table
-lu_crs = "SELECT find_SRID('public', '%s', 'geometry');" % lu_table
+ways_crs = "SELECT find_SRID('public', '%s', 'geom');" % ways_table
+points_crs = "SELECT find_SRID('public', '%s', 'geom');" % points_table
+rel_crs = "SELECT find_SRID('public', '%s', 'geom');" % rel_table
+sa_crs = "SELECT find_SRID('public', '%s', 'geom');" % sa_table
+lu_crs = "SELECT find_SRID('public', '%s', 'geom');" % lu_table
 
 with engine.connect() as connection:
     check_ways = list(connection.execute(ways_crs))[0][0]
@@ -111,11 +111,11 @@ else:
     print('All tables are not in the same projection!')
 #%%
 #Create spatial indexes
-index_ways = "CREATE INDEX %s_geom_idx ON %s USING GIST (geometry);" % (ways_table,ways_table)
-index_rel = "CREATE INDEX %s_geom_idx ON %s USING GIST (geometry);" % (rel_table,rel_table)
-index_points = "CREATE INDEX %s_geom_idx ON %s USING GIST (geometry);" % (points_table,points_table)
-index_sa = "CREATE INDEX %s_geom_idx ON %s USING GIST (geometry);" % (sa_table,sa_table)
-index_lu = "CREATE INDEX %s_geom_idx ON %s USING GIST (geometry);" % (lu_table,lu_table)
+index_ways = "CREATE INDEX %s_geom_idx ON %s USING GIST (geom);" % (ways_table,ways_table)
+index_rel = "CREATE INDEX %s_geom_idx ON %s USING GIST (geom);" % (rel_table,rel_table)
+index_points = "CREATE INDEX %s_geom_idx ON %s USING GIST (geom);" % (points_table,points_table)
+index_sa = "CREATE INDEX %s_geom_idx ON %s USING GIST (geom);" % (sa_table,sa_table)
+index_lu = "CREATE INDEX %s_geom_idx ON %s USING GIST (geom);" % (lu_table,lu_table)
 
 create_index_w = run_query_alc(index_ways, engine)
 create_index_p = run_query_alc(index_rel, engine)
@@ -128,9 +128,9 @@ create_index_lu = run_query_alc(index_lu, engine)
 #Uncomment if data should be clipped to the extent of the study area + buffer
 
 '''
-clip_ways = "DELETE FROM %s AS ways USING %s AS boundary WHERE NOT ST_DWithin(ways.geometry, boundary.geometry, %d) AND NOT ST_Intersects(ways.geometry, boundary.geometry);" % (ways_table, sa_table, buffer)
-clip_points = "DELETE FROM %s AS points USING %s AS boundary WHERE NOT ST_DWithin(points.geometry, boundary.geometry, %d) AND NOT ST_Intersects(points.geometry, boundary.geometry);" % (points_table, sa_table, buffer)
-clip_rels =  "DELETE FROM %s AS rel USING %s AS boundary WHERE NOT ST_DWithin(rel.geometry, boundary.geometry, %d) AND NOT ST_Intersects(rel.geometry, boundary.geometry);" % (points_table, sa_table, buffer)
+clip_ways = "DELETE FROM %s AS ways USING %s AS boundary WHERE NOT ST_DWithin(ways.geom, boundary.geom, %d) AND NOT ST_Intersects(ways.geom, boundary.geom);" % (ways_table, sa_table, buffer)
+clip_points = "DELETE FROM %s AS points USING %s AS boundary WHERE NOT ST_DWithin(points.geom, boundary.geom, %d) AND NOT ST_Intersects(points.geom, boundary.geom);" % (points_table, sa_table, buffer)
+clip_rels =  "DELETE FROM %s AS rel USING %s AS boundary WHERE NOT ST_DWithin(rel.geom, boundary.geom, %d) AND NOT ST_Intersects(rel.geom, boundary.geom);" % (points_table, sa_table, buffer)
 
 run_clip_w = run_query_alc(clip_ways2, engine)
 run_clip_p = run_query_alc(clip_points, engine)

@@ -37,7 +37,7 @@ to_postgis(traffic, table_traffic, engine, if_exists='fail')
 connection = connect_pg(db_name, db_user, db_password, db_host)
 #%%
 #Check that data are in the right projection
-get_crs_light = "SELECT find_SRID('public', '%s', 'geometry');" % table_light
+get_crs_light = "SELECT find_SRID('public', '%s', 'geom');" % table_light
 check_crs_light = run_query_pg(get_crs_light, connection)
 
 if check_crs_light[0][0] == 0:
@@ -46,12 +46,12 @@ if check_crs_light[0][0] == 0:
 if check_crs_light[0][0] != crs:
 
     #Reproject
-    reproj_light = "ALTER TABLE %s ALTER COLUMN geometry TYPE geometry(POINT,%d) USING ST_Transform(geometry,%d)" % (table_light, crs, crs)
+    reproj_light = "ALTER TABLE %s ALTER COLUMN geom TYPE geom(POINT,%d) USING ST_Transform(geom,%d)" % (table_light, crs, crs)
     reproject1 = run_query_pg(reproj_light,connection,success='Data reprojected')
 else:
     print('Data is in the right projection')  
 #%%
-get_crs_traffic = "SELECT find_SRID('public', '%s', 'geometry');" % table_traffic
+get_crs_traffic = "SELECT find_SRID('public', '%s', 'geom');" % table_traffic
 check_crs_traffic = run_query_pg(get_crs_traffic, connection)
 
 if check_crs_traffic[0][0] == 0:
@@ -59,15 +59,15 @@ if check_crs_traffic[0][0] == 0:
 
 
 if check_crs_traffic[0][0] != crs:
-    reproj_traffic = "ALTER TABLE %s ALTER COLUMN geometry TYPE geometry(POINT,%d) USING ST_Transform(geometry,%d)" % (table_traffic, crs, crs)
+    reproj_traffic = "ALTER TABLE %s ALTER COLUMN geom TYPE geom(POINT,%d) USING ST_Transform(geom,%d)" % (table_traffic, crs, crs)
     reproject2 = run_query_pg(reproj_traffic,connection,success='Data reprojected')
 else:
     print('Data is in the right projection')
 #%%
 #Create spatial index
-create_index_light = 'CREATE INDEX light_geom_idx ON street_light USING GIST (geometry);'
+create_index_light = 'CREATE INDEX light_geom_idx ON street_light USING GIST (geom);'
 index_light = run_query_pg(create_index_light,connection)
-index_traffic = run_query_pg('CREATE INDEX counts_geom_idx ON traffic_counts USING GIST (geometry);',connection)
+index_traffic = run_query_pg('CREATE INDEX counts_geom_idx ON traffic_counts USING GIST (geom);',connection)
 
 #%%
 

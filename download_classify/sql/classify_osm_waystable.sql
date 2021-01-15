@@ -43,7 +43,7 @@ DROP COLUMN length_;
 */
 
 --Calculating segment lengths
-UPDATE ways_rh SET length_ = ST_Length(geometry);
+UPDATE ways_rh SET length_ = ST_Length(geom);
 
 --Setting overall road type
 
@@ -69,14 +69,14 @@ UPDATE ways_rh SET road_type =
 
 -- Limiting number of road segments with road type 'unknown'
 CREATE VIEW unknown_roadtype AS 
-(SELECT name, osm_id, highway, road_type, geometry FROM ways_rh WHERE road_type = 'ukendt');
+(SELECT name, osm_id, highway, road_type, geom FROM ways_rh WHERE road_type = 'ukendt');
 CREATE VIEW known_roadtype 
-AS (SELECT name, osm_id, highway, road_type, geometry FROM ways_rh 
+AS (SELECT name, osm_id, highway, road_type, geom FROM ways_rh 
 WHERE road_type != 'ukendt' AND highway != 'cycleway');
 
 
 UPDATE unknown_roadtype uk SET road_type = kr.road_type FROM known_roadtype kr 
-WHERE ST_Touches(uk.geometry, kr.geometry) AND uk.name = kr.name;
+WHERE ST_Touches(uk.geom, kr.geom) AND uk.name = kr.name;
 
 UPDATE unknown_roadtype uk SET road_type = kr.road_type FROM known_roadtype kr 
 WHERE uk.name = kr.name AND uk.road_type = 'ukendt';
@@ -279,7 +279,7 @@ UPDATE ways_rh SET along_street = 'true' WHERE car_traffic = 'yes' AND cycling_i
 -- Capturing cycleways digitized as individual ways both still running parallel to a street
 CREATE VIEW cycleways AS (SELECT name, highway, road_type, cycling_infrastructure, along_street FROM ways_rh 
 WHERE highway = 'cycleway');
-CREATE VIEW car_roads AS (SELECT name, highway, road_type, geometry FROM ways_rh 
+CREATE VIEW car_roads AS (SELECT name, highway, road_type, geom FROM ways_rh 
 WHERE car_traffic = 'yes');
 
 UPDATE cycleways c SET along_street = 'true'

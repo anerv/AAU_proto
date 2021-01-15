@@ -14,12 +14,12 @@ ALTER TABLE poly_service ADD COLUMN adm VARCHAR DEFAULT NULL;
 -- For ways the centroid is used to ensure that a segment only is assigned to one municipality
 CREATE MATERIALIZED VIEW ways_adm_cent AS
     SELECT w.osm_id, s.navn AS adm FROM ways_rh w 
-    JOIN study_area_rh s ON ST_Contains(s. geometry, ST_Centroid(w.geometry)) GROUP BY osm_id;
+    JOIN study_area_rh s ON ST_Contains(s. geom, ST_Centroid(w.geom)) GROUP BY osm_id;
 
 -- The a view solely based on intersects are used for those where the centroid is outside of the polygon layer
 CREATE MATERIALIZED VIEW ways_adm AS
     SELECT w.osm_id, s.navn AS adm FROM ways_rh w 
-    JOIN study_area_rh s ON ST_Intersects(s. geometry, w.geometry)
+    JOIN study_area_rh s ON ST_Intersects(s. geom, w.geom)
     WHERE w.adm IS NULL;
 
 
@@ -40,7 +40,7 @@ UPDATE ways_rh w SET w.adm = a.adm
 
 CREATE MATERIALIZED VIEW ways_adm_all AS 
 	SELECT w.osm_id, string_agg(DISTINCT s.navn, ', ') AS adm FROM ways_rh w 
-    JOIN study_area_rh s ON ST_Intersects(w.geometry, s.geometry) GROUP BY osm_id;
+    JOIN study_area_rh s ON ST_Intersects(w.geom, s.geom) GROUP BY osm_id;
 
 --CREATE INDEX osmid4 ON ways_adm_all(osm_id);
 
@@ -49,11 +49,11 @@ UPDATE ways_rh w SET adm = a.adm
 
 
 UPDATE points_infra p SET adm = s.navn FROM study_area_rh s 
-    WHERE ST_Intersects(p.geometry, s.geometry);
+    WHERE ST_Intersects(p.geom, s.geom);
 
 UPDATE points_service p SET adm = s.navn FROM study_area_rh s 
-    WHERE ST_Intersects(p.geometry, s.geometry);
+    WHERE ST_Intersects(p.geom, s.geom);
 
 UPDATE poly_service p SET adm = s.navn FROM study_area_rh s 
-    WHERE ST_Contains(s.geometry, ST_Centroid(p.geometry));
+    WHERE ST_Contains(s.geom, ST_Centroid(p.geom));
 

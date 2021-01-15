@@ -31,18 +31,18 @@ ways_del = ', DROP COLUMN '.join(ways_col)
 ways_del = 'ALTER TABLE %s ' % ways_table + 'DROP COLUMN ' + ways_del + ';'
 
 #Columns to be dropped from relations table
-rel_useful_cols = ['osm_id', 'name', 'operator','ref','route','geometry']
+rel_useful_cols = ['osm_id', 'name', 'operator','ref','route','geom']
 rel_query = "SELECT * FROM %s" % rel_table
-relations = gpd.read_postgis(rel_query, connection, geom_col='geometry')
+relations = gpd.read_postgis(rel_query, connection, geom_col='geom')
 rel_org_cols = list(relations.columns)
 rel_cols_del = [i for i in rel_org_cols if i not in rel_useful_cols]
 rel_del = '", DROP COLUMN "'.join(rel_cols_del)
 rel_del = 'ALTER TABLE %s ' % rel_table + 'DROP COLUMN "' + rel_del + '";'
 
 #Columns to be dropped from points table
-points_useful_cols = ['osm_id','amenity','area','barrier','bicycle','bollard','crossing','crossing:island','crossing:ref','ele','flashing_lights','foot','highway','layer','lit','parking','public_transport','railway','ref','segregated','service:bicycle:chain_tool','service:bicycle:pump','service','shop','surface','traffic_calming','traffic_sign','traffic_signals','geometry']
+points_useful_cols = ['osm_id','amenity','area','barrier','bicycle','bollard','crossing','crossing:island','crossing:ref','ele','flashing_lights','foot','highway','layer','lit','parking','public_transport','railway','ref','segregated','service:bicycle:chain_tool','service:bicycle:pump','service','shop','surface','traffic_calming','traffic_sign','traffic_signals','geom']
 points_query = "SELECT * FROM %s" % points_table
-points = gpd.read_postgis(points_query, connection, geom_col='geometry')
+points = gpd.read_postgis(points_query, connection, geom_col='geom')
 points_org_cols = list(points.columns)
 points_cols_del = [i for i in points_org_cols if i not in points_useful_cols]
 points_del = '", DROP COLUMN "'.join(points_cols_del)
@@ -83,12 +83,12 @@ run_ways_rel = run_query_pg(fp_r, connection)
 
 #%%
 #Saving bicycle parking and bicycle rental to separate table
-poly_service = "CREATE TABLE poly_service AS (SELECT osm_id, amenity, geometry FROM %s WHERE amenity IN ('bicycle_parking','bicycle_rental'))" % lu_table
+poly_service = "CREATE TABLE poly_service AS (SELECT osm_id, amenity, geom FROM %s WHERE amenity IN ('bicycle_parking','bicycle_rental'))" % lu_table
 run_bi_s = run_query_pg(poly_service, connection)
 
 #%%
 #Creating spatial index for table with cycle services
-index_bi_s = "CREATE INDEX b_s_geom_idx ON poly_service USING GIST (geometry);"
+index_bi_s = "CREATE INDEX b_s_geom_idx ON poly_service USING GIST (geom);"
 create_index = run_query_pg(index_bi_s, connection)
 
 #%%
