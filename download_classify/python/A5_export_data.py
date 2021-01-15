@@ -64,11 +64,10 @@ points_s_gdf.to_file(fp_points_s)
 #Saving tables to csv
 
 #First, convert geom to lat long (lines and polygons are converted to centroids)
-convert_geom = run_query_pg('../sql/convert_geom_to_latlong.sql', connection)
-
+convert_geom_latlong = run_query_pg('../sql/convert_geom_to_latlong.sql', connection)
+#%%
 #If geometries are neede as WKT
-
-#OBS add here!!
+convert_geom_wkt = run_query_pg('../sql/geom_to_wkt.sql',connection)
 #%%
 #Copying geodataframes
 ways_latlong = ways_gdf.copy(deep=True)
