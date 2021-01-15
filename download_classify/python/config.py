@@ -20,6 +20,9 @@ lc_layer_name = 'corine'
 #Filepath to attribute data for Corine land cover
 fp_att = '../data/clc_legend_modified.csv'
 
+#Filepath to elevation model
+fp_dem = '../data/DHM_10.tif'
+
 #Size of buffer in metres
 buffer = 3000
 
