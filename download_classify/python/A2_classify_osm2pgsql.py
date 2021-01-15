@@ -58,9 +58,9 @@ run_del_r = run_query_pg(rel_del, connection)
 #Classifying ways table
 
 #Filepath to sql file
-fp_w = '../sql/classify_osm_waystable.sql'
+fp_ways = '../sql/classify_osm_waystable.sql'
 
-run_class_w = run_query_pg(fp_w, connection)
+run_class_w = run_query_pg(fp_ways, connection)
 
 #%%
 #Adding information about administrative area
@@ -69,22 +69,22 @@ run_class_w = run_query_pg(fp_w, connection)
 #Classyfing points table
 
 #Filepath to sql file
-fp_p =  '../sql/classify_osm_points.sql'
+fp_points =  '../sql/classify_osm_points.sql'
 
-run_class_p = run_query_pg(fp_p, connection)
+run_class_p = run_query_pg(fp_points, connection)
 
 #%%
 #Joining data about cycle routes to ways data
 
 #Filepath to sql file
-fp_r = '../sql/join_relations_to_ways.sql'
+fp_rel = '../sql/join_relations_to_ways.sql'
 
-run_ways_rel = run_query_pg(fp_r, connection)
+run_ways_rel = run_query_pg(fp_rel, connection)
 
 #%%
 #Saving bicycle parking and bicycle rental to separate table
 poly_service = "CREATE TABLE poly_service AS (SELECT osm_id, amenity, geom FROM %s WHERE amenity IN ('bicycle_parking','bicycle_rental'))" % lu_table
-run_bi_s = run_query_pg(poly_service, connection)
+run_poly_service = run_query_pg(poly_service, connection)
 
 #%%
 #Creating spatial index for table with cycle services
