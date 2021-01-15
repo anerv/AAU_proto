@@ -21,7 +21,8 @@ ADD COLUMN elevation NUMERIC DEFAULT NULL,
 ADD COLUMN pedestrian_allowed VARCHAR DEFAULT NULL,  
 ADD COLUMN on_street_park VARCHAR DEFAULT NULL,  
 ADD COLUMN surface_assumed VARCHAR DEFAULT NULL,
-ADD COLUMN length_ FLOAT DEFAULT NULL;  
+ADD COLUMN length_ FLOAT DEFAULT NULL,
+ADD COLUMN bike_length FLOAT DEFAULT NULL;  
 
 /*
 ALTER TABLE ways_rh
@@ -177,10 +178,14 @@ UPDATE ways_rh SET cycling_infrastructure =
             THEN 'cykelsti_venstre_cykelbane_hoejre'
         WHEN ("cycleway:right" ILIKE '%track' AND ("cycleway:left" = 'lane' OR "cycleway:left" = 'opposite_lane'))
             THEN 'cykelsti_hoejre_cykelbane_venstre'
-        WHEN "cycleway:left" ILIKE '%track' AND "cycleway:right" = 'separate' THEN 'cykelsti_venstre'
-        WHEN "cycleway:right" ILIKE '%track' AND "cycleway:left" = 'separate' THEN 'cykelsti_hoejre'
-        WHEN "cycleway:left" IN ('lane','opposite_lane') AND "cycleway:right" = 'separate' THEN 'cykelbane_venstre'
-        WHEN "cycleway:right" IN ('lane','opposite_lane') AND "cycleway:left" = 'separate' THEN 'cykelbane_hoejre'
+        WHEN "cycleway:left" ILIKE '%track' AND "cycleway:right" = 'separate' 
+            THEN 'cykelsti_venstre'
+        WHEN "cycleway:right" ILIKE '%track' AND "cycleway:left" = 'separate' 
+            THEN 'cykelsti_hoejre'
+        WHEN "cycleway:left" IN ('lane','opposite_lane') AND "cycleway:right" = 'separate' 
+            THEN 'cykelbane_venstre'
+        WHEN "cycleway:right" IN ('lane','opposite_lane') AND "cycleway:left" = 'separate' 
+            THEN 'cykelbane_hoejre'
         ELSE cycling_infrastructure
     END)
 WHERE cycling_allowed = 'yes';
@@ -212,7 +217,7 @@ WHERE cycling_allowed = 'yes';
 UPDATE ways_rh SET cycling_infrastructure =
     (CASE
         WHEN ("cycleway:left" ILIKE '%track' AND "cycleway:right" = 'shared_lane')
-            THEN 'cykelsti_venstre_og_delt_koerebane_hoejre'
+            THEN 'cykelsti_venstre_delt_koerebane_hoejre'
         WHEN ("cycleway:left" = 'shared_lane' AND "cycleway:right" ILIKE '%track')
             THEN 'cykelsti_hoejre_delt_koerebane_venstre'
         WHEN ("cycleway:left" IN ('lane','opposite_lane') AND "cycleway:right" = 'shared_lane')
@@ -257,7 +262,7 @@ UPDATE ways_rh SET cycling_infra_simple =
             THEN 'cykelbane'
         WHEN cycling_infrastructure IN ('cykelsti','cykelsti_begge','cykelsti_venstre', 'cykelsti_hoejre')
             THEN 'cykelsti'
-        WHEN cycling_infrastructure IN ('delt_koerebane','delt_koerebane_venstre', 'delt_koerebane_hoejre')
+        WHEN cycling_infrastructure IN ('delt_koerebane','delt_koerebane_venstre', 'delt_koerebane_hoejre', 'delt_koerebane_begge')
             THEN 'delt_koerebane'
         WHEN road_type IN ('sti','gangsti') AND cycling_infrastructure IS NULL AND cycling_allowed = 'yes'
             THEN 'sti_cykling_tilladt'
@@ -317,5 +322,15 @@ UPDATE ways_rh SET surface_assumed =
     END)
 WHERE surface_assumed IS NULL;
 
-
+--Calculating length of cycling infrafrastructure
+-- Doubles the length of segments where there are cycling infrastructure in both sides
+-- Shared lanes are not included
+UPDATE ways_rh SET bike_length =
+    CASE
+        WHEN cycling_infrastructure ILIKE '%_begge'
+            OR cycling_infrastructure IN ('cykelsti_venstre_cykelbane_hoejre', 'cykelsti_hoejre_cykelbane_venstre')
+        THEN length_ * 2
+        ELSE length_
+    END
+WHERE cycling_infrastructure IS NOT NULL AND cycling_infra_simple != 'delt_koerebane';
 
