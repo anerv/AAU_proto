@@ -21,7 +21,9 @@ lc_layer_name = 'corine'
 fp_att = '../data/clc_legend_modified.csv'
 
 #Filepath to elevation model
-fp_dem = '../data/DHM_10.tif'
+fp_dem = '../data/DHM_05.tif'
+# Table name for dem
+dem = 'dhm_05'
 
 #Size of buffer in metres
 buffer = 3000

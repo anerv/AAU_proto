@@ -1,6 +1,7 @@
 '''
 This scripts calculates the elevation profile for cycling infrastructure based on a DEM
-The method uses a DEM with a resolution of at least 10*10 meters
+The method uses a DEM with a resolution of at least 5*5 meters
+The raster is loaded to the database using raster2pgsql, but use the code below to check that the raster has the correct format
 '''
 
 #%%
@@ -8,6 +9,7 @@ The method uses a DEM with a resolution of at least 10*10 meters
 import rasterio
 from rasterio.enums import Resampling
 from config import *
+from database_functions import *
 #%%
 '''
 upscale_factor = 2
@@ -37,10 +39,10 @@ dem = rasterio.open(fp_dem)
 # %%
 #Check resolution
 pixel_x, pixel_y = dem.res
-if pixel_x >= 10 and pixel_y >= 10:
+if pixel_x >= 4.99 and pixel_y >= 4.99:
     print('The DEM resolution is okay')
 else:
-    print('This script requires a resolution of at least 10*10 meters')
+    print('This script requires a resolution of 5*5 meters or larger')
 #%%
 #Check crs
 if dem.crs == crs:
@@ -48,3 +50,5 @@ if dem.crs == crs:
 else:
     print('Please reproject DEM to EPSG:%d' % crs)
 # %%
+# %%
+
