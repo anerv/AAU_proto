@@ -24,6 +24,8 @@ ADD COLUMN surface_assumed VARCHAR DEFAULT NULL,
 ADD COLUMN length_ FLOAT DEFAULT NULL,
 ADD COLUMN bike_length FLOAT DEFAULT NULL;  
 
+ALTER TABLE ways_rh ADD PRIMARY KEY (osm_id);
+
 /*
 ALTER TABLE ways_rh
 DROP COLUMN car_traffic, 
