@@ -18,4 +18,6 @@ CREATE EXTENSION postgis_raster;
 osm2pgsql -c -d rh -U postgres -H localhost -W -S "C:\Users\OA03FG\Aalborg Universitet\Urban Research group - General\AAU data\AAU grunddata\PROTOTYPE\AAU_proto\download_classify\modified_stylefile.style" --slim -K "C:\Users\OA03FG\Downloads\denmark-latest.osm.pbf"
 
 -- Use command below to load raster to database
-raster2pgsql -s 25832 -C -I -F -t 3741x3570 "C:\Users\OA03FG\Aalborg Universitet\Urban Research group - General\AAU data\AAU grunddata\PROTOTYPE\AAU_proto\download_classify\data/DHM_05_2.tif" | psql -h localhost -p 5432 -U postgres -d rh
+raster2pgsql -s 25832 -C -I -F -t 3741x3570 "C:\Users\OA03FG\Aalborg Universitet\Urban Research group - General\AAU data\AAU grunddata\PROTOTYPE\AAU_proto\download_classify\data/DHM_05.tif" public.dhm_05 | psql -h localhost -p 5432 -U postgres -d rh
+
+--raster2pgsql -s 25832 -C -I -F -t 1406x839 "C:\Users\OA03FG\Aalborg Universitet\Urban Research group - General\AAU data\AAU grunddata\PROTOTYPE\AAU_proto\download_classify\data/DHM_test.tif" | psql -h localhost -p 5432 -U postgres -d rh

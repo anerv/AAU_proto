@@ -539,3 +539,5 @@ download_classify/data/DMH_10.tif
 download_classify/data/DHM_10.tif
 download_classify/data/DHM_20.tif
 download_classify/data/DHM_05_2.tif
+download_classify/sql/elevation.sql
+download_classify/data/DHM_test.tif
