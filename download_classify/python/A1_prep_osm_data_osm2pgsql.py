@@ -124,6 +124,10 @@ create_index_sa = run_query_alc(index_sa, engine)
 create_index_lu = run_query_alc(index_lu, engine)
 
 #%%
+#Drop unnecessary tables to slim database
+drop_tables = run_query_alc('../sql/drop_osm_tables.sql',engine)
+
+#%%
 #Option to clip data to study area
 #Uncomment if data should be clipped to the extent of the study area + buffer
 
