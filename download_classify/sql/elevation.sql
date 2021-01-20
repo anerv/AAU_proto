@@ -1,6 +1,10 @@
 '''
 This script converts linestrings into point geometries to be used for extracting elevation from a DEM
-For lines longer than 20 meters (the resolution of the DEM) more point geometries are added at 20 meter intervals
+Different methods are used: One for finding elevation of all start and end points for ways, which can be used to compute slope.
+Another one which segment all lines longer than 20 meter into smaller segments and adds elevation to all points (gives a more detailed elevation profile)
+Neither of the methods can handle locations with several layers of roads (e.g. bridge over a highway), and the first method has some drawbacks with very long way segments (loss of detail)
+For lines longer than 20 meters more point geometries are added at 20 meter intervals
+The performance for computing slope and aspect rasters with PostGIS appears to be quite poor - it is recommended to use Python with GDAL or rasterio instead
 '''
 -- Important! Using tiles of 100*100 speeds up performance a lot
 
@@ -177,10 +181,12 @@ DELETE FROM point_geometries p
 
 DROP VIEW linestrings;
 '''
+'''
 -- Creating slope table
 CREATE TABLE slope_05 AS SELECT ST_Slope(d.rast, 1, '32BF', 'PERCENT', 1.0) AS slope, rast 
-  FROM dhm_05 d
+  FROM dhm_tiled d
 ;
+
 ALTER TABLE slope_05 ADD COLUMN rid SERIAL PRIMARY KEY;
 CREATE INDEX slope_gix ON slope_05 USING GIST(ST_Convexhull(rast));
 
@@ -216,16 +222,19 @@ ALTER TABLE ways_rh ADD COLUMN slope_percent FLOAT DEFAULT NULL;
 UPDATE ways_rh w SET slope_percent = s.slope_percent FROM start_end_points s
   WHERE w.osm_id = s.osm_id
 ;
+'''
+UPDATE point_geometries p SET elevation = ST_Value(rast, 1, p.geom) 
+  FROM dhm_tiled d WHERE ST_Intersects(d.rast, p.geom)
+;
+UPDATE point_geometries p SET elevation = ST_NearestValue(rast, 1, p.geom) 
+  FROM dhm_tiled d WHERE ST_Intersects(d.rast, p.geom)
+;
 
 '''
 CREATE VIEW point_elevation AS
     SELECT rid, ST_Value(rast, 1, p.geom) AS elevation, osm_id, path, id, ST_AsText(p.geom) geom
-        FROM dhm_05_02, point_geometries p
+        FROM dhm_05, point_geometries p
             WHERE ST_Intersects(rast,p.geom) ORDER BY osm_id, path
 ;
 '''
 
-
-'''
-Plan: find elevation for all start and end points, calculate slope for each way
-'''
