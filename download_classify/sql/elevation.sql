@@ -238,3 +238,24 @@ CREATE VIEW point_elevation AS
 ;
 '''
 
+
+WITH union_ AS (SELECT ST_Union(
+	ARRAY(SELECT geometry FROM ways_rh WHERE route_ref ILIKE '%havnering%') 
+) AS geom) SELECT St_segmentize(geom, 20) from union_;
+
+CREATE TABLE testing AS (SELECT ST_Union(
+	ARRAY(SELECT geometry FROM ways_rh WHERE route_ref ILIKE '%havnering%') 
+) AS geom);
+
+CREATE TABLE testing2 AS (SELECT ST_Union(
+	ARRAY(SELECT geometry FROM ways_rh WHERE osm_id IN (496720678, 751162441, 751162442)) 
+) AS geom);
+
+
+SELECT ST_Segmentize(geom, 200) FROM testing;
+
+CREATE TABLE test_points AS
+    SELECT (ST_DumpPoints(ST_Segmentize(geom,20))).geom AS geom, 
+        (ST_DumpPoints(ST_Segmentize(geom,20))).path[2] as path
+        FROM testing
+;

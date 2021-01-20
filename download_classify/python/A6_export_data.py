@@ -86,13 +86,8 @@ serviceinfra_latlong.drop(columns='geom',inplace=True)
 servicepoly_latlong.drop(columns='geom',inplace=True)
 # %%
 #Convert to regular dataframe to enable saving to csv
-ways_df = pd.DataFrame(ways_latlong)
-infra_df = pd.DataFrame(serviceinfra_latlong)
-service_points_df = pd.DataFrame(servicepoints_latlong)
-service_poly_df = pd.DataFrame(servicepoly_latlong)
-
-ways_df.to_csv('../data/ways_latlong.csv')
-infra_df.to_csv('../data/service_infra_latlong.csv')
-service_points_df.to_csv('../data/service_points_latlong.csv')
-service_poly_df.to_csv('../data/service_poly_latlong.csv')
+ways_latlong.to_csv('../data/ways_latlong.csv')
+serviceinfra_latlong.to_csv('../data/service_infra_latlong.csv')
+servicepoints_latlong.to_csv('../data/service_points_latlong.csv')
+servicepoly_latlong.to_csv('../data/service_poly_latlong.csv')
 # %%

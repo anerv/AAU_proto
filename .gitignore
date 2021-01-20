@@ -541,3 +541,4 @@ download_classify/data/DHM_20.tif
 download_classify/data/DHM_05_2.tif
 download_classify/sql/elevation.sql
 download_classify/data/DHM_test.tif
+download_classify/data/ele_profile.csv
