@@ -546,3 +546,17 @@ download_classify/data/ele_data.csv
 download_classify/data/ele_data2.csv
 .gitignore
 styles/streets_light.qml
+download_classify/data/mastra_trafiktaelling.cpg
+download_classify/data/mastra_trafiktaelling.dbf
+download_classify/data/mastra_trafiktaelling.shp
+download_classify/data/armaturer/Armaturer.shx
+download_classify/data/armaturer/Armaturer.dbf
+download_classify/data/armaturer/Armaturer.shp
+download_classify/data/OPEN_DATA_STOEJDATA_VIEWPoint.cst
+download_classify/data/mastra_trafiktaelling.prj
+download_classify/data/mastra_trafiktaelling.shx
+.gitignore
+download_classify/data/OPEN_DATA_STOEJDATA_VIEWPoint.dbf
+download_classify/data/OPEN_DATA_STOEJDATA_VIEWPoint.prj
+download_classify/data/OPEN_DATA_STOEJDATA_VIEWPoint.shp
+download_classify/data/OPEN_DATA_STOEJDATA_VIEWPoint.shx
