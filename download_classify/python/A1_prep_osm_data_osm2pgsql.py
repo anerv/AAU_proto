@@ -66,24 +66,26 @@ rename1 = 'ALTER TABLE %s RENAME COLUMN way TO geom;' % ways_table
 rename2 = 'ALTER TABLE %s RENAME COLUMN way TO geom;' % points_table
 rename3 = 'ALTER TABLE %s RENAME COLUMN way TO geom;' % rel_table
 rename4 = 'ALTER TABLE %s RENAME COLUMN way TO geom;' % lu_table
+rename5 = 'ALTER TABLE %s RENAME COLUMN geometry TO geom;' % sa_table
 
 rename_ways = run_query_alc(rename1, engine)
 rename_points = run_query_alc(rename2, engine)
 rename_rels = run_query_alc(rename3, engine)
 rename_lu = run_query_alc(rename4, engine)
+rename_sa = run_query_alc(rename5, engine)
 
 #%%
 #Reprojecting data
-reproj1 = "ALTER TABLE %s ALTER COLUMN geom TYPE geom(LINESTRING,%d) USING ST_Transform(geom,%d)" % (ways_table, crs, crs)
+reproj1 = "ALTER TABLE %s ALTER COLUMN geom TYPE geometry(LINESTRING,%d) USING ST_Transform(geom,%d)" % (ways_table, crs, crs)
 
-reproj2 = "ALTER TABLE %s ALTER COLUMN geom TYPE geom(POINT,%d) USING ST_Transform(geom,%d)" % (points_table, crs, crs)
+reproj2 = "ALTER TABLE %s ALTER COLUMN geom TYPE geometry(POINT,%d) USING ST_Transform(geom,%d)" % (points_table, crs, crs)
 
-reproj3 = "ALTER TABLE %s ALTER COLUMN geom TYPE geom(LINESTRING,%d) USING ST_Transform(geom,%d)" % (rel_table, crs, crs)
+reproj3 = "ALTER TABLE %s ALTER COLUMN geom TYPE geometry(LINESTRING,%d) USING ST_Transform(geom,%d)" % (rel_table, crs, crs)
 
-reproj4 = "ALTER TABLE %s ALTER COLUMN geom TYPE geom(MULTIPOLYGON,%d) USING ST_Transform(geom,%d)" % (sa_table, crs, crs)
+reproj4 = "ALTER TABLE %s ALTER COLUMN geom TYPE geometry(MULTIPOLYGON,%d) USING ST_Transform(geom,%d)" % (sa_table, crs, crs)
 
-reproj5 = "ALTER TABLE %s ALTER COLUMN geom TYPE geom(POLYGON,%d) USING ST_Transform(geom,%d)" % (lu_table, crs, crs)
-
+reproj5 = "ALTER TABLE %s ALTER COLUMN geom TYPE geometry(POLYGON,%d) USING ST_Transform(geom,%d)" % (lu_table, crs, crs)
+#%%
 reproject_ways = run_query_alc(reproj1, engine)
 reproject_points = run_query_alc(reproj2, engine)
 reproject_relations = run_query_alc(reproj3, engine)
@@ -125,18 +127,19 @@ create_index_lu = run_query_alc(index_lu, engine)
 
 #%%
 #Drop unnecessary tables to slim database
-drop_tables = run_query_alc('../sql/drop_osm_tables.sql',engine)
-
+drop_tables = run_query_alc('DROP TABLE planet_osm_ways;',engine)
+drop_tables = run_query_alc('DROP TABLE planet_osm_roads;',engine)
+drop_tables = run_query_alc('DROP TABLE planet_osm_rels;',engine)
+drop_tables = run_query_alc('DROP TABLE planet_osm_polygon;',engine)
 #%%
 #Option to clip data to study area
 #Uncomment if data should be clipped to the extent of the study area + buffer
-
 '''
 clip_ways = "DELETE FROM %s AS ways USING %s AS boundary WHERE NOT ST_DWithin(ways.geom, boundary.geom, %d) AND NOT ST_Intersects(ways.geom, boundary.geom);" % (ways_table, sa_table, buffer)
 clip_points = "DELETE FROM %s AS points USING %s AS boundary WHERE NOT ST_DWithin(points.geom, boundary.geom, %d) AND NOT ST_Intersects(points.geom, boundary.geom);" % (points_table, sa_table, buffer)
-clip_rels =  "DELETE FROM %s AS rel USING %s AS boundary WHERE NOT ST_DWithin(rel.geom, boundary.geom, %d) AND NOT ST_Intersects(rel.geom, boundary.geom);" % (points_table, sa_table, buffer)
-
-run_clip_w = run_query_alc(clip_ways2, engine)
+clip_rels =  "DELETE FROM %s AS rel USING %s AS boundary WHERE NOT ST_DWithin(rel.geom, boundary.geom, %d) AND NOT ST_Intersects(rel.geom, boundary.geom);" % (rel_table, sa_table, buffer)
+#%%
+run_clip_w = run_query_alc(clip_ways, engine)
 run_clip_p = run_query_alc(clip_points, engine)
 run_clip_r = run_query_alc(clip_rels, engine)
 '''
@@ -146,18 +149,14 @@ run_clip_r = run_query_alc(clip_rels, engine)
 #Alternatively use a GIS and load clipped data to database
 
 #Filepaths to clipped files
-ways_fp = r'C:\Users\OA03FG\Aalborg Universitet\Urban Research group - General\AAU data\AAU grunddata\PROTOTYPE\ways_clipped.gpkg'
-rel_fp = r'C:\Users\OA03FG\Aalborg Universitet\Urban Research group - General\AAU data\AAU grunddata\PROTOTYPE\rel_clipped.gpkg'
-points_fp =  r'C:\Users\OA03FG\Aalborg Universitet\Urban Research group - General\AAU data\AAU grunddata\PROTOTYPE\points_clipped.gpkg'
-lu_fp = r'C:\Users\OA03FG\Aalborg Universitet\Urban Research group - General\AAU data\AAU grunddata\PROTOTYPE\lu_clipped.gpkg'
+clipped_fp = '../data/clipped.gpkg'
 
 #%%
 #Load clipped data to geodataframes
-ways_clipped = gpd.read_file(ways_fp, layer='ways_clipped')
-#%%
-rel_clipped = gpd.read_file(rel_fp, layer='rel_clipped')
-points_clipped = gpd.read_file(points_fp, layer='points_clipped')
-lu_clipped = gpd.read_file(lu_fp, layer='lu_clipped')
+ways_clipped = gpd.read_file(clipped_fp, layer='ways')
+rel_clipped = gpd.read_file(clipped_fp, layer='relations')
+points_clipped = gpd.read_file(clipped_fp, layer='points')
+lu_clipped = gpd.read_file(clipped_fp, layer='lu')
 
 # %%
 #Load data to db
@@ -166,3 +165,45 @@ to_postgis(rel_clipped,'rel_clipped',engine)
 to_postgis(points_clipped,'points_clipped',engine)
 to_postgis(lu_clipped,'lu_clipped',engine)
 # %%
+#Drop original tables
+drop_ways = 'DROP TABLE %s;' % ways_table
+drop_rels = 'DROP TABLE %s;' % rel_table
+drop_points = 'DROP TABLE %s;' % points_table
+drop_lu = 'DROP TABLE %s;' % lu_table
+#%%
+drop_org_ways = run_query_alc(drop_ways, engine)
+drop_org_rels = run_query_alc(drop_rels, engine)
+drop_org_points = run_query_alc(drop_points, engine)
+drop_org_lu = run_query_alc(drop_lu, engine)
+#%%
+#Rename tables
+rename_ways = run_query_alc('ALTER TABLE ways_clipped RENAME TO %s' % ways_table, engine)
+rename_rels = run_query_alc('ALTER TABLE rel_clipped RENAME TO %s' % rel_table, engine)
+rename_points = run_query_alc('ALTER TABLE points_clipped RENAME TO %s' % points_table, engine)
+rename_lu = run_query_alc('ALTER TABLE lu_clipped RENAME TO %s' % lu_table, engine)
+#%%
+#If this method is done, repeat steps above (CRS should be unchanged if not altered during clipping)
+
+#Renaming geomtry columns
+#Using osm2pgsql the geom col is initially called 'way'
+rename1 = 'ALTER TABLE %s RENAME COLUMN geometry TO geom;' % ways_table
+rename2 = 'ALTER TABLE %s RENAME COLUMN geometry TO geom;' % points_table
+rename3 = 'ALTER TABLE %s RENAME COLUMN geometry TO geom;' % rel_table
+rename4 = 'ALTER TABLE %s RENAME COLUMN geometry TO geom;' % lu_table
+
+rename_ways = run_query_alc(rename1, engine)
+rename_points = run_query_alc(rename2, engine)
+rename_rels = run_query_alc(rename3, engine)
+rename_lu = run_query_alc(rename4, engine)
+#%%
+#Create spatial indexes
+index_ways = "CREATE INDEX %s_geom_idx ON %s USING GIST (geom);" % (ways_table,ways_table)
+index_rel = "CREATE INDEX %s_geom_idx ON %s USING GIST (geom);" % (rel_table,rel_table)
+index_points = "CREATE INDEX %s_geom_idx ON %s USING GIST (geom);" % (points_table,points_table)
+index_lu = "CREATE INDEX %s_geom_idx ON %s USING GIST (geom);" % (lu_table,lu_table)
+
+create_index_w = run_query_alc(index_ways, engine)
+create_index_p = run_query_alc(index_rel, engine)
+create_index_rel = run_query_alc(index_points, engine)
+create_index_lu = run_query_alc(index_lu, engine)
+#%%

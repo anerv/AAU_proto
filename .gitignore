@@ -560,3 +560,6 @@ download_classify/data/OPEN_DATA_STOEJDATA_VIEWPoint.dbf
 download_classify/data/OPEN_DATA_STOEJDATA_VIEWPoint.prj
 download_classify/data/OPEN_DATA_STOEJDATA_VIEWPoint.shp
 download_classify/data/OPEN_DATA_STOEJDATA_VIEWPoint.shx
+download_classify/data/clipped.gpkg
+download_classify/data/clipped.gpkg-shm
+download_classify/data/clipped.gpkg-wal

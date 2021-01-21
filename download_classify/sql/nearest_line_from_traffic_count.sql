@@ -11,25 +11,25 @@ ADD COLUMN bike_aadt INTEGER;
 
 -- Create view of traffic counts joined to the nearest way
 CREATE VIEW counts_car AS (SELECT DISTINCT ON (t.id)
-    t.id AS point, t.geometry, t."AADT", w.name AS closest_way, w.osm_id, ST_Distance(t.geometry,w.geometry) AS dist 
+    t.id AS point, t.geom, t."AADT", w.name AS closest_way, w.osm_id, ST_Distance(t.geom,w.geom) AS dist 
     FROM traffic_counts AS t
-    LEFT JOIN ways_rh AS w ON ST_DWithin(t.geometry,w.geometry,10) 
+    LEFT JOIN ways_rh AS w ON ST_DWithin(t.geom,w.geom,10) 
 	WHERE w.car_traffic = 'yes' AND t."KOERETOEJS" = 'MOTORKTJ'
     ORDER BY t.id, dist)
 ;
 
 CREATE VIEW counts_bike AS (SELECT DISTINCT ON (t.id)
-    t.id AS point, t.geometry, t."AADT", w.name AS closest_way, w.osm_id, ST_Distance(t.geometry,w.geometry) AS dist 
+    t.id AS point, t.geom, t."AADT", w.name AS closest_way, w.osm_id, ST_Distance(t.geom,w.geom) AS dist 
     FROM traffic_counts AS t
-    LEFT JOIN ways_rh AS w ON ST_DWithin(t.geometry,w.geometry,10) 
+    LEFT JOIN ways_rh AS w ON ST_DWithin(t.geom,w.geom,10) 
 	WHERE w.cycling_infrastructure IS NOT NULL AND t."KOERETOEJS" IN('CYKLER','C/K')
     ORDER BY t.id, dist)
 ;
 
 CREATE VIEW counts_bike_road AS (SELECT DISTINCT ON (t.id)
-    t.id AS point, t.geometry, t."AADT", w.name AS closest_way, w.osm_id, ST_Distance(t.geometry,w.geometry) AS dist 
+    t.id AS point, t.geom, t."AADT", w.name AS closest_way, w.osm_id, ST_Distance(t.geom,w.geom) AS dist 
     FROM traffic_counts AS t
-    LEFT JOIN ways_rh AS w ON ST_DWithin(t.geometry,w.geometry,10) 
+    LEFT JOIN ways_rh AS w ON ST_DWithin(t.geom,w.geom,10) 
 	WHERE t."KOERETOEJS" IN('CYKLER','C/K')
     ORDER BY t.id, dist)
 ;
@@ -50,9 +50,9 @@ UPDATE ways_rh w SET bike_aadt = "AADT" FROM counts_bike_road c
 
 -- This table also contains data about average speed and speed limit
 CREATE VIEW speed AS (SELECT DISTINCT ON (t.id)
-    t.id AS point, t.geometry, t."GNS_HASTIG", t."HAST_GRAEN", w.name AS closest_way, w.osm_id, ST_Distance(t.geometry,w.geometry) AS dist 
+    t.id AS point, t.geom, t."GNS_HASTIG", t."HAST_GRAEN", w.name AS closest_way, w.osm_id, ST_Distance(t.geom,w.geom) AS dist 
     FROM traffic_counts AS t
-    LEFT JOIN ways_rh AS w ON ST_DWithin(t.geometry,w.geometry,10)
+    LEFT JOIN ways_rh AS w ON ST_DWithin(t.geom,w.geom,10)
     WHERE w.car_traffic = 'yes' AND  t."KOERETOEJS" = 'MOTORKTJ'
     ORDER BY t.id, dist)
 ;

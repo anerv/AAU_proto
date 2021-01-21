@@ -26,3 +26,4 @@ connection = connect_pg(db_name, db_user, db_password)
 #%%
 #Running script assigning elevation to way vertices and computing slope for ways
 run_elevation_script = run_query_pg('../sql/elevation.sql', connection)
+#%%

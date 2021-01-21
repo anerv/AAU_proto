@@ -29,8 +29,8 @@ except(Exception) as error:
 att = pd.read_csv(fp_att, sep=';')
 #%%
 #Remove empty rows
-att.dropna(how='all')
-
+att.dropna(inplace=True)
+#%%
 # Rename column to join columns have the same name, convert float to integer
 att['CODE_12'] = att['CLC_CODE'].astype(int)
 #%%
@@ -52,7 +52,8 @@ land_cover.columns = land_cover.columns.str.lower()
 #%%
 # Load to db
 to_postgis(land_cover, 'land_cover', engine)
-
+rename = run_query_alc('ALTER TABLE land_cover RENAME geometry to geom',engine)
+#%%
 # Add spatial index
 index_lc = "CREATE INDEX lc_geom_idx ON land_cover USING GIST (geom);"
 create_index = run_query_alc(index_lc, engine)
@@ -70,12 +71,12 @@ remove_oc = run_query_alc("DELETE FROM lc_sa WHERE objectid = 1;",engine)
 #Creating table with coastlines
 cl = '''CREATE TABLE coastline AS (SELECT * FROM planet_osm_line WHERE "natural" = 'coastline');'''
 run_cl = run_query_alc(cl, engine)
-#%%
+
 #Rename geom column
 rename_c = run_query_alc("ALTER TABLE coastline RENAME COLUMN way TO geom", engine)
 
 #Reproject
-reproj = "ALTER TABLE coastline ALTER COLUMN geom TYPE geom(LINESTRING,%d) USING ST_Transform(geom,%d)" % (crs, crs)
+reproj = "ALTER TABLE coastline ALTER COLUMN geom TYPE geometry(LINESTRING,%d) USING ST_Transform(geom,%d)" % (crs, crs)
 reproject_ways = run_query_alc(reproj, engine)
 
 # Create spatial index for coastlines
@@ -84,7 +85,7 @@ run_index = run_query_alc(index_cl, engine)
 # %%
 # Update attribute for ways based on land cover
 #run file
-fp = '..\\sql\\land_cover.sql'
+fp = '../sql/land_cover.sql'
 
 connection = connect_pg(db_name, db_user, db_password, db_host)
 run_lc = run_query_pg(fp, connection)

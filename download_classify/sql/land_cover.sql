@@ -34,7 +34,7 @@ CREATE MATERIALIZED VIEW close_to AS
 	WHERE ST_DWithin(w.geom, l.geom, 20) AND NOT ST_Intersects(w.geom, l.geom)
 	GROUP BY osm_id;
 
-CREATE INDEX osmid_c ON ways_close_to (osm_id);
+CREATE INDEX osmid_c ON close_to (osm_id);
 
 UPDATE ways_rh w SET close_to = landcover 
 	FROM close_to c WHERE w.osm_id = c.osm_id;

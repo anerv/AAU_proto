@@ -63,9 +63,6 @@ fp_ways = '../sql/classify_osm_waystable.sql'
 run_class_w = run_query_pg(fp_ways, connection)
 
 #%%
-#Adding information about administrative area
-
-#%%
 #Classyfing points table
 
 #Filepath to sql file
@@ -91,6 +88,9 @@ run_poly_service = run_query_pg(poly_service, connection)
 index_bi_s = "CREATE INDEX b_s_geom_idx ON poly_service USING GIST (geom);"
 create_index = run_query_pg(index_bi_s, connection)
 
+#%%
+#Adding information about administrative area
+run_adm = run_query_pg('../sql/adding_adm_area.sql', connection)
 #%%
 # Testing the results
 

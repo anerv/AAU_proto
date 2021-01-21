@@ -25,6 +25,6 @@ ALTER TABLE points_infra DROP COLUMN amenity, DROP COLUMN area, DROP COLUMN flas
 
 ALTER TABLE points_service DROP COLUMN area, DROP COLUMN barrier, DROP COLUMN bicycle, DROP COLUMN bollard, DROP COLUMN crossing, 
     DROP COLUMN "crossing:island", DROP COLUMN "crossing:ref", DROP COLUMN ele, DROP COLUMN flashing_lights, 
-    DROP COLUMN foot, DROP COLUMN highway, DROP COLUMN parking, DROP COLUMN public_transport, DROP COLUMN railway
+    DROP COLUMN foot, DROP COLUMN highway, DROP COLUMN parking, DROP COLUMN public_transport, DROP COLUMN railway,
     DROP COLUMN ref, DROP COLUMN segregated, DROP COLUMN surface, DROP COLUMN traffic_calming, DROP COLUMN traffic_sign,
     DROP COLUMN traffic_signals;

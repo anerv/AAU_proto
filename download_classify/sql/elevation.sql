@@ -5,7 +5,11 @@ Another one which segment all lines longer than 20 meter into smaller segments a
 Neither of the methods can handle locations with several layers of roads (e.g. bridge over a highway), and the first method has some drawbacks with very long way segments (loss of detail)
 For lines longer than 20 meters more point geometries are added at 20 meter intervals
 The performance for computing slope and aspect rasters with PostGIS appears to be quite poor - it is recommended to use Python with GDAL or rasterio instead
-'''*/-- Important! Using tiles of 100*100 speeds up performance a lot
+
+The method does not work for those ways comprised of self-intersecting or otherwise invalid multilinestrings (they cannot be converted to linestrings and thus you cannot find start and end points)
+*/
+
+-- Using tiles of 100*100 speeds up performance a lot
 
 -- Create a new table for tiled raster
 CREATE TABLE dhm_tiled(
@@ -19,10 +23,11 @@ INSERT INTO dhm_tiled(rast)
 
 -- Table with all original point geometries and new points add 20 meter intervals
 CREATE TABLE point_geometries AS
-    SELECT osm_id, length_, (ST_DumpPoints(ST_Segmentize(geometry,20))).geom AS geom, 
-        (ST_DumpPoints(ST_Segmentize(geometry,20))).path[2] as path
+    SELECT osm_id, length_, (ST_DumpPoints(ST_Segmentize(geom,20))).geom AS geom, 
+        (ST_DumpPoints(ST_Segmentize(geom,20))).path[2] as path
         FROM ways_rh
 ;
+ALTER TABLE point_geometries ADD COLUMN elevation INTEGER;
 
 ALTER TABLE point_geometries
     ADD CONSTRAINT fk_ways FOREIGN KEY (osm_id) REFERENCES ways_rh (osm_id)
@@ -35,7 +40,7 @@ CREATE INDEX p_geom_idx
 
 -- View to be used to get start and end points from the multilinestrings
 CREATE VIEW linestrings AS
-	(SELECT osm_id, ST_LineMerge(geometry) geom 
+	(SELECT osm_id, ST_LineMerge(geom) geom 
 	FROM ways_rh)
 ;
 
@@ -101,23 +106,23 @@ UPDATE start_points s SET elevation = ST_NearestValue(rast, 1, s.geom)
 
 -- Using a tiled raster can cause issues for a small number of points
 -- Use regular raster to update elevation for remaining
-UPDATE start_points s SET elevation = ST_Value(rast, 1, s.geom) 
+UPDATE start_points s SET elevation = ST_NearestValue(rast, 1, s.geom) 
   FROM dhm_05 d WHERE ST_Intersects(d.rast, s.geom)
   AND elevation IS NULL
 ;
 
-UPDATE end_points e SET elevation = ST_Value(rast, 1, e.geom) 
+UPDATE end_points e SET elevation = ST_NearestValue(rast, 1, e.geom) 
   FROM dhm_05 d WHERE ST_Intersects(d.rast, e.geom)
   AND elevation IS NULL
 ;
 
-'''
+/*
 CREATE TABLE start_end_points AS
 	(SELECT * FROM start_point
 	UNION
 	SELECT * FROM end_point ORDER BY osm_id)
 ;
-'''
+*/
 CREATE TABLE start_end_points AS
   (SELECT s.osm_id, s.geom geom_s, e.geom geom_e, s.type type1, e.type type2, 
   s.elevation start_elevation, e.elevation end_elevation
@@ -156,8 +161,8 @@ UPDATE start_end_points SET slope_percent = slope * 100;
 
 -- Table with original point geometries
 CREATE TEMPORARY TABLE org_points AS 
-    SELECT osm_id, length_, (ST_DumpPoints(geometry)).path[2] as path,
-    (ST_DumpPoints(geometry)).geom
+    SELECT osm_id, length_, (ST_DumpPoints(geom)).path[2] as path,
+    (ST_DumpPoints(geom)).geom
     FROM ways_rh
 ;
 
@@ -211,22 +216,22 @@ UPDATE point_geometries p SET aspect = ST_Value(rast, 1, p.geom)
   FROM aspect_05 a WHERE ST_Intersects(a.rast, p.geom)
 ;
 
--- Find elevation for each point geometry - for detailed elevation profiles
+-- Find elevation for each point geom - for detailed elevation profiles
 UPDATE point_geometries p SET elevation = ST_Value(rast, 1, p.geom) 
   FROM dhm_tiled d WHERE ST_Intersects(d.rast, p.geom)
 ;
-
+*/
 ALTER TABLE ways_rh ADD COLUMN slope_percent FLOAT DEFAULT NULL;
 
 UPDATE ways_rh w SET slope_percent = s.slope_percent FROM start_end_points s
   WHERE w.osm_id = s.osm_id
 ;
-*/
+
 UPDATE point_geometries p SET elevation = ST_Value(rast, 1, p.geom) 
   FROM dhm_tiled d WHERE ST_Intersects(d.rast, p.geom)
 ;
 UPDATE point_geometries p SET elevation = ST_NearestValue(rast, 1, p.geom) 
-  FROM dhm_tiled d WHERE ST_Intersects(d.rast, p.geom)
+  FROM dhm_tiled d WHERE ST_Intersects(d.rast, p.geom) AND elevation IS NULL
 ;
 
 /*
