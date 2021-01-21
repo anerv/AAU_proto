@@ -1,12 +1,11 @@
-'''
+/*
 This script converts linestrings into point geometries to be used for extracting elevation from a DEM
 Different methods are used: One for finding elevation of all start and end points for ways, which can be used to compute slope.
 Another one which segment all lines longer than 20 meter into smaller segments and adds elevation to all points (gives a more detailed elevation profile)
 Neither of the methods can handle locations with several layers of roads (e.g. bridge over a highway), and the first method has some drawbacks with very long way segments (loss of detail)
 For lines longer than 20 meters more point geometries are added at 20 meter intervals
 The performance for computing slope and aspect rasters with PostGIS appears to be quite poor - it is recommended to use Python with GDAL or rasterio instead
-'''
--- Important! Using tiles of 100*100 speeds up performance a lot
+'''*/-- Important! Using tiles of 100*100 speeds up performance a lot
 
 -- Create a new table for tiled raster
 CREATE TABLE dhm_tiled(
@@ -150,7 +149,7 @@ UPDATE start_end_points SET ele_diff = end_elevation - start_elevation;
 UPDATE start_end_points SET slope = ele_diff/length_;
 UPDATE start_end_points SET slope_percent = slope * 100;
 
-'''
+/*
 -- If original points execpt start and end points should be removed from point geometries
 -- (results in more than 20 meters between some points due to the functionality of ST_Segmentize)
 -- Ideally, find a different method for even segmentation
@@ -180,8 +179,8 @@ DELETE FROM point_geometries p
 ;
 
 DROP VIEW linestrings;
-'''
-'''
+*/
+/*
 -- Creating slope table
 CREATE TABLE slope_05 AS SELECT ST_Slope(d.rast, 1, '32BF', 'PERCENT', 1.0) AS slope, rast 
   FROM dhm_tiled d
@@ -222,7 +221,7 @@ ALTER TABLE ways_rh ADD COLUMN slope_percent FLOAT DEFAULT NULL;
 UPDATE ways_rh w SET slope_percent = s.slope_percent FROM start_end_points s
   WHERE w.osm_id = s.osm_id
 ;
-'''
+*/
 UPDATE point_geometries p SET elevation = ST_Value(rast, 1, p.geom) 
   FROM dhm_tiled d WHERE ST_Intersects(d.rast, p.geom)
 ;
@@ -230,32 +229,11 @@ UPDATE point_geometries p SET elevation = ST_NearestValue(rast, 1, p.geom)
   FROM dhm_tiled d WHERE ST_Intersects(d.rast, p.geom)
 ;
 
-'''
+/*
 CREATE VIEW point_elevation AS
     SELECT rid, ST_Value(rast, 1, p.geom) AS elevation, osm_id, path, id, ST_AsText(p.geom) geom
         FROM dhm_05, point_geometries p
             WHERE ST_Intersects(rast,p.geom) ORDER BY osm_id, path
 ;
-'''
+*/
 
-
-WITH union_ AS (SELECT ST_Union(
-	ARRAY(SELECT geometry FROM ways_rh WHERE route_ref ILIKE '%havnering%') 
-) AS geom) SELECT St_segmentize(geom, 20) from union_;
-
-CREATE TABLE testing AS (SELECT ST_Union(
-	ARRAY(SELECT geometry FROM ways_rh WHERE route_ref ILIKE '%havnering%') 
-) AS geom);
-
-CREATE TABLE testing2 AS (SELECT ST_Union(
-	ARRAY(SELECT geometry FROM ways_rh WHERE osm_id IN (496720678, 751162441, 751162442)) 
-) AS geom);
-
-
-SELECT ST_Segmentize(geom, 200) FROM testing;
-
-CREATE TABLE test_points AS
-    SELECT (ST_DumpPoints(ST_Segmentize(geom,20))).geom AS geom, 
-        (ST_DumpPoints(ST_Segmentize(geom,20))).path[2] as path
-        FROM testing
-;

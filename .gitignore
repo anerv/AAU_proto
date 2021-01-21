@@ -542,3 +542,7 @@ download_classify/data/DHM_05_2.tif
 download_classify/sql/elevation.sql
 download_classify/data/DHM_test.tif
 download_classify/data/ele_profile.csv
+download_classify/data/ele_data.csv
+download_classify/data/ele_data2.csv
+.gitignore
+styles/streets_light.qml
