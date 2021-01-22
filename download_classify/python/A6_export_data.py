@@ -1,4 +1,5 @@
 #Save tables to file (either Shape or Geopackage)
+# Must be adapted to include traffic counts and noise variables
 #%%
 #Importing modules
 from config import *
@@ -14,13 +15,14 @@ retrieve_ways = "SELECT * FROM %s;" % ways_table
 retrieve_points_s = "SELECT * FROM points_service;"
 retrieve_points_i = "SELECT * FROM points_infra;"
 retrieve_poly_s = "SELECT * FROM poly_service;"
+retrieve_traffic = "SELECT * FROM traffic_counts;"
 #%%
 #Loading data to geodataframes
 ways_gdf = gpd.GeoDataFrame.from_postgis(retrieve_ways, connection, geom_col='geom')
 points_s_gdf = gpd.GeoDataFrame.from_postgis(retrieve_points_s, connection, geom_col='geom')
 points_i_gdf = gpd.GeoDataFrame.from_postgis(retrieve_points_i, connection, geom_col='geom')
 poly_service = gpd.GeoDataFrame.from_postgis(retrieve_poly_s, connection, geom_col='geom')
-
+traffic_counts_gdf = gpd.GeoDataFrame.from_postgis(retrieve_traffic, connection, geom_col='geom')
 # %%
 '''
 #Get test data instead of entire ways table

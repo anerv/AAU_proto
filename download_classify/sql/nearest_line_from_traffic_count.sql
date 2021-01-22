@@ -72,3 +72,14 @@ DROP VIEW counts_car;
 DROP VIEW counts_bike;
 DROP VIEW counts_bike_road;
 DROP VIEW speed;
+
+ALTER TABLE traffic_counts ADD COLUMN id SERIAL PRIMARY KEY;
+
+DELETE FROM traffic_counts WHERE 
+    traffic_counts.id IN (
+        SELECT t.id FROM
+        traffic_counts t, (
+            SELECT ST_Union(geom) As geom FROM study_area_rh
+            ) s
+        WHERE NOT ST_Intersects(t.geom, s.geom)
+);

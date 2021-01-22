@@ -563,3 +563,5 @@ download_classify/data/OPEN_DATA_STOEJDATA_VIEWPoint.shx
 download_classify/data/clipped.gpkg
 download_classify/data/clipped.gpkg-shm
 download_classify/data/clipped.gpkg-wal
+download_classify/data/municipal_id.csv
+download_classify/data/kommunekoder.txt

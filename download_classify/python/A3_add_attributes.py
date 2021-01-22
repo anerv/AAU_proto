@@ -6,9 +6,10 @@ The data added here are information about street lights and traffic counts but c
 #Importing modules
 import psycopg2 as pg
 from config import *
-from database_functions import connect_pg, run_query_pg, connect_alc, to_postgis
+from database_functions import *
 import sqlalchemy
 import geopandas as gpd
+import pandas as pd
 #%%
 #Connecting to database
 engine = connect_alc(db_name, db_user, db_password)
@@ -97,7 +98,9 @@ index_light = run_query_pg('CREATE INDEX light_geom_idx ON street_light USING GI
 index_traffic = run_query_pg('CREATE INDEX counts_geom_idx ON traffic_counts USING GIST (geom);',connection)
 index_noise = run_query_pg('CREATE INDEX noise_geom_idx ON noise_variables USING GIST(geom);', connection)
 #%%
-#Join traffic lights and traffic counts to nearest way
+
+#Add attributes from traffic lights and traffic counts to nearest way
+#This scripts also deletes traffic counts outside of the study area
 fp_l = '../sql/nearest_line_from_light.sql'
 fp_t = '../sql/nearest_line_from_traffic_count.sql'
 
@@ -107,4 +110,11 @@ join_traffic = run_query_pg(fp_t,connection)
 # %%
 # Create reference between noise data and ways
 create_ref = run_query_pg('../sql/noise_data.sql', connection, close=True)
+#%%
+#Load municipal id's to database (used to add municipal name to e.g. traffic counts)
+muni_data = pd.read_csv('../data/municipal_id.csv', header=0, encoding="ISO-8859-1", delimiter=';')
+load_to_db = muni_data.to_sql('muni_id', engine)
+# %%
+add_col = run_query_alc("ALTER TABLE traffic_counts ADD COLUMN kommunenavn VARCHAR;", engine)
+add_names = run_query_alc('UPDATE traffic_counts t SET kommunenavn = municipality FROM muni_id m WHERE t."KOMMUNE" = m.code;',engine)
 #%%
